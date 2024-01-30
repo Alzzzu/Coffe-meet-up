@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Coffechat" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/coffee</item>
+        <item name = "android:statusBarColor" tools:targetAPI="l">@color/coffee</item>
+    </style>
+
+    <style name="Theme.Coffechat" parent="Base.Theme.Coffechat" />
+</resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/rectangle_background"
+    tools:context=".activities.main_activities.CoffeeshopFragment">
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imageBack"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:padding="@dimen/_6sdp"
+        android:src="@drawable/ic_back"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/_150sdp"
+        android:src="@drawable/logo"
+        />
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Название"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:fontFamily="@font/russ3"
+        android:textSize="@dimen/_20ssp"/>
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Адрес"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:fontFamily="@font/russ3"
+        android:textSize="@dimen/_20ssp"/>
+    <Button
+        android:id="@+id/route"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Проложить маршрут"
+        android:layout_gravity="center"
+        android:backgroundTint="@color/whipped_cream"/>
+
+</LinearLayout>

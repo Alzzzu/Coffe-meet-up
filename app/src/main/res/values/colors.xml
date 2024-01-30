@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="coffee">#6F4E37</color>
+    <color name="caramel">#C78752</color>
+    <color name="whipped_cream">#F8B47B</color>
+    <color name="red">#FF0000</color>
+    <color name="grey">	#808080</color>
+    <color name="blue">	#ADD8E6</color>
+    <color name="transparent">#00000000</color>
+
+
+</resources>

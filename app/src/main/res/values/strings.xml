@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Coffe-chat</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_map">Map</string>
+    <string name="title_chat">Chat</string>
+    <string name="title_profile">Profile</string>
+    <string name="name">coffee meet-up</string>
+    <string name="hello_blank_fragment">eh</string>
+
+    <!-- Titles -->
+    <string name="welcome">Добро пожаловать!</string>
+    <string name="registration">Регистрация</string>
+
+    <!-- Login and Registration -->
+    <string name="create_account">Создать аккаунт</string>
+    <string name="enter">Войти</string>
+    <string name="incorrect_filling">некорректный логин или пароль</string>
+    <string name="email">email</string>
+    <string name="password">password</string>
+    <string name="enter_email">введите свою почту</string>
+    <string name="create_password">придумайте пароль</string>
+    <string name="assert_password">подтвердите пароль</string>
+    <string name="cont">Продолжить</string>
+    <!-- User -->
+    <string name="user_name">Имя</string>
+    <string name="user_age">Возраст</string>
+    <string name="user_about">Напишите о Вас и Вашем характере</string>
+    <string name="user_hobbies">Расскажите о своих хобби и интересах</string>
+    <string name="male">М</string>
+    <string name="female">Ж</string>
+
+
+
+
+</resources>

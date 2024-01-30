@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="10sp">
+
+
+    <ImageView
+        android:layout_width="320sp"
+        android:layout_height="400sp"
+        android:src ="@drawable/coffee_colour"
+        android:layout_centerVertical="true"
+        android:id="@+id/list_item_image"
+        android:scaleType="centerCrop"/>
+    <FrameLayout
+        android:id="@+id/delete"
+        android:layout_width="@dimen/_40sdp"
+        android:visibility="gone"
+        android:layout_height="@dimen/_40sdp"
+        android:background="@drawable/for_photo"
+        android:layout_alignRight="@id/list_item_image"
+        android:backgroundTint="@color/whipped_cream">
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_gravity="center"
+            android:src="@drawable/delete" />
+
+    </FrameLayout>
+    <ProgressBar
+        android:id="@+id/progress_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+
+</RelativeLayout>
