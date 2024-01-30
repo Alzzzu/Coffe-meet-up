@@ -169,10 +169,6 @@ public class MapActivity extends FragmentActivity {
             p1 = new GeoPoint((double) (location.getLatitude()),
                     (double) (location.getLongitude()));
 
-
-            //tv.setText(p1.toString());
-
-
             return p1;
         } catch (IOException e) {
             e.printStackTrace();
