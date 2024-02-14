@@ -11,6 +11,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -23,8 +24,11 @@ public class GPSTracker extends Service implements LocationListener {
 
     private LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     private PreferencesManager preferencesManager;
+    final String LOG_TAG = "myLogs";
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(LOG_TAG, "YUY");
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationManager locationManager =
                     (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -34,12 +38,14 @@ public class GPSTracker extends Service implements LocationListener {
             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
         }
 
-        return Service.START_STICKY;
+       // return Service.START_STICKY;
+        return START_NOT_STICKY;
     }
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
-        preferencesManager = new PreferencesManager(getApplicationContext());
+        Log.d(LOG_TAG, "YUY");
+      //  preferencesManager = new PreferencesManager(getApplicationContext());
     }
 
     @Override

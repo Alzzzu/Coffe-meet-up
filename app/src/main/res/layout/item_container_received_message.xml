@@ -19,7 +19,7 @@
         android:paddingBottom="@dimen/_8sdp"
         app:layout_constraintWidth_max="wrap"
         android:textColor="@color/white"
-        android:textSize="@dimen/_13ssp"
+        android:textSize="@dimen/_15ssp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.75"/>

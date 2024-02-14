@@ -31,6 +31,10 @@
             android:name=".activities.services.TimerService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name=".activities.services.GPSTracker"
+            android:enabled="true"
+            android:exported="true" />
 
         <activity
             android:name=".activities.main_activities.RouteActivity"

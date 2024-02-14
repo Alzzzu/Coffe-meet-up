@@ -11,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import my.first.messenger.activities.listeners.UsersListener;
@@ -77,7 +78,16 @@ public class UsersActivity extends AppCompatActivity implements UsersListener {
     public void onUserClick(User user){
         Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
-        startActivity(intent);
-        finish();
+     //   startActivity(intent);
+    //    finish();
+        FirebaseFirestore database = FirebaseFirestore.getInstance();
+        HashMap<String, Object> updt = new HashMap<>();
+        updt.put(Constants.KEY_VISITED_IMAGE, user.name);
+        updt.put(Constants.KEY_VISITOR_IMAGE, preferenceManager.getString(Constants.KEY_NAME));
+        updt.put(Constants.KEY_VISITED_ID, user.id);
+        updt.put(Constants.KEY_VISITOR_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        updt.put(Constants.KEY_VISITED_NAME, user.image);
+        updt.put(Constants.KEY_VISITOR_NAME, preferenceManager.getString(Constants.KEY_IMAGE));
+        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
     }
 }

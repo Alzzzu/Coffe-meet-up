@@ -125,6 +125,8 @@ public class RouteFragment extends Fragment {
                 double lng = task.getResult().getDouble("longitude");
                 double lat = task.getResult().getDouble("latitude");
                 //  coffeeshopLoc = new GeoPoint(lng,lat);
+            //    preferencesManager.putString(Constants.KEY_COFFEESHOP_LONGITUDE, lng+"");
+             //   preferencesManager.putString(Constants.KEY_COFFEESHOP_LATITUDE, lat+"");
                 Marker marker = new Marker(map);
                 marker.setPosition(new GeoPoint(lat, lng));
                 map.getOverlays().add(marker);

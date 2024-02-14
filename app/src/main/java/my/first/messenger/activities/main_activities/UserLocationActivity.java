@@ -88,7 +88,6 @@ public class UserLocationActivity extends AppCompatActivity {
                             longitTextView.setText(location.getLongitude() + "");
                             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
                             preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
-
                             Intent i = new Intent(getApplicationContext(), MapActivity.class);
                             double loc[] = {location.getLatitude(), location.getLongitude()};
                             i.putExtra("location", loc);
@@ -127,9 +126,6 @@ public class UserLocationActivity extends AppCompatActivity {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
-           // latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-           // longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-
             Intent i = new Intent(getApplicationContext(), MapActivity.class);
             double loc[] = {mLastLocation.getLatitude(), mLastLocation.getLongitude()};
             i.putExtra("location", loc);

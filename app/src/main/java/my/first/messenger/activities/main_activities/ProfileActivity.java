@@ -29,6 +29,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
@@ -120,24 +121,64 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             binding.addImage.setVisibility(View.VISIBLE);
             binding.bottomNavigation.setVisibility(View.VISIBLE);
         }
-
-        //   binding.userGallery.setImageBitmap(bitmap);
     }
     private void getToken(){
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
     }
     private void updateToken(String token){
+
+        preferencesManager.putString(Constants.KEY_FCM_TOKEN,token);
+
         FirebaseFirestore database  = FirebaseFirestore.getInstance();
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(
                 preferencesManager.getString(Constants.KEY_USER_ID)
         );
+
         documentReference.update(Constants.KEY_FCM_TOKEN, token)
                 .addOnSuccessListener(unused->makeToast("Token changed"))
                 .addOnFailureListener(e -> makeToast("Failed token"));
     }
+
     private void signOut() {
         makeToast("Signing out...");
         FirebaseFirestore database = FirebaseFirestore.getInstance();
+        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
+                .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                .get()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()&&task.getResult()!=null) {
+
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            FirebaseFirestore.getInstance().collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).document(queryDocumentSnapshot.getId()).delete();
+                        }
+                        }
+                });
+
+        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
+                .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                .get()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()&&task.getResult()!=null) {
+
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            FirebaseFirestore.getInstance().collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).document(queryDocumentSnapshot.getId()).delete();
+                        }
+                    }
+                });
+
+        // delete from coffeeshop
+        if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)||preferencesManager.getBoolean(Constants.KEY_IS_GOING)) {
+            database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+                    .collection(Constants.KEY_COLLECTION_USERS)
+                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+
+            if (database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                    .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+                    .collection(Constants.KEY_COLLECTION_USERS).count().equals(0)){
+
+            }
+
+        }
         DocumentReference documentReference =
                 database.collection(Constants.KEY_COLLECTION_USERS).document( preferencesManager.getString(Constants.KEY_USER_ID)
                 );
@@ -209,8 +250,17 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                     return true;
                 }
                 else if (item.getItemId()==R.id.map){
-                    startActivity(new Intent(getApplicationContext(),UserLocationActivity.class));
-                    overridePendingTransition(0,0);
+                    if (preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+                        startActivity(new Intent(getApplicationContext(),ActivatedActivity.class));
+
+                    }
+                    else if (preferencesManager.getBoolean(Constants.KEY_IS_GOING)){
+                        startActivity(new Intent(getApplicationContext(),RouteActivity.class));
+                    }
+                    else {
+                        startActivity(new Intent(getApplicationContext(), UserLocationActivity.class));
+                        overridePendingTransition(0, 0);
+                    }
                     return true;
                 }
                 else if (item.getItemId()==R.id.chat){

@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import my.first.messenger.R;
 import my.first.messenger.activities.main_activities.RouteActivity;
@@ -92,9 +93,10 @@ public class CoffeeshopFragment extends Fragment {
         binding.route.setOnClickListener(v->{
             HashMap<String, Boolean> updt= new HashMap<>();
             updt.put("activated", true);
-            HashMap<String, String> user = new HashMap<>();
-           // user.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
+            HashMap<String, Object> user = new HashMap<>();
             user.put("status","going");
+            user.put(Constants.KEY_NAME,preferencesManager.getString(Constants.KEY_NAME));
+            user.put(Constants.KEY_IMAGE,preferencesManager.getString(Constants.KEY_IMAGE));
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("coffeeshops").document(id)
@@ -104,8 +106,9 @@ public class CoffeeshopFragment extends Fragment {
             Intent intent = new Intent(getActivity(), RouteActivity.class);
             intent.putExtra(Constants.KEY_COFFEESHOP_ID,id);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            preferencesManager.putBoolean(Constants.KEY_IS_GOING,true);
+            preferencesManager.putString(Constants.KEY_COFFEESHOP_ID,id);
             startActivity(intent);
-
 
             Bundle bundle = new Bundle();
             bundle.putString(Constants.KEY_COFFEESHOP_ID,id);

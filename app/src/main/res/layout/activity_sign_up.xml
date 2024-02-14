@@ -88,11 +88,11 @@
         android:layout_gravity="center"
         android:layout_height="wrap_content"
         android:fontFamily="@font/russ"
-        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_5sdp"
         android:text="@string/cont"
+
         android:textSize="@dimen/_20ssp"
-        android:tint="#66FF0000"
-        android:alpha="0.6"/>
+        android:alpha="0.8"/>
 
 
 

@@ -62,8 +62,17 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
                     return true;
                 }
                 else if (item.getItemId()==R.id.map){
-                    startActivity(new Intent(getApplicationContext(),UserLocationActivity.class));
-                    overridePendingTransition(0,0);
+                    if (preferenceManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+                        startActivity(new Intent(getApplicationContext(),ActivatedActivity.class));
+
+                    }
+                    else if (preferenceManager.getBoolean(Constants.KEY_IS_GOING)){
+                        startActivity(new Intent(getApplicationContext(),RouteActivity.class));
+                    }
+                    else {
+                        startActivity(new Intent(getApplicationContext(), UserLocationActivity.class));
+                        overridePendingTransition(0, 0);
+                    }
                     return true;
                 }
                 else if (item.getItemId()==R.id.profile){

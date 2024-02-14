@@ -3,6 +3,7 @@ package my.first.messenger.activities.main_activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.icu.text.Edits;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -14,6 +15,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonIOException;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,9 +38,14 @@ import my.first.messenger.activities.adapters.ImageAdapter;
 import my.first.messenger.activities.listeners.ChatMessageListener;
 import my.first.messenger.activities.models.ChatMessage;
 import my.first.messenger.activities.models.User;
+import my.first.messenger.activities.network.ApiClient;
+import my.first.messenger.activities.network.ApiService;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.ActivityChatBinding;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends BaseActivity implements ChatMessageListener {
     private ActivityChatBinding binding;
@@ -62,9 +75,49 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         );
         binding.chatRecycleView.setAdapter(chatAdapter);
         database = FirebaseFirestore.getInstance();
+    }
 
+
+    private void sendNotification(String messageBody){
+        ApiClient.getClient().create(ApiService.class).sendMessage(
+                Constants.getRemoteMsgHeaders(),
+                messageBody
+        ).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                if (response.isSuccessful()){
+                    try{
+                        if (response.body() !=null){
+                            JSONObject responseJson  = new JSONObject(response.body());
+                            JSONArray result = responseJson.getJSONArray("results");
+                            if(responseJson.getInt("failure")==1){
+                                JSONObject error =  (JSONObject) result.get(0);
+                                makeToast(error.getString("error"));
+                                return;
+                            }
+                        }
+                    }
+                    catch(JSONException e){
+                        makeToast(e.getMessage());
+                    }
+                    makeToast("notification sent");
+                }
+                    else{
+                        makeToast("error "+response.code());
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+                makeToast(t.getMessage());
+
+            }
+        });
 
     }
+
     private void sendMessage(){
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
@@ -87,9 +140,32 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             conversation.put(Constants.KEY_TIMESTAMP, new Date());
             addConversation(conversation);
         }
-        binding.inputMessage.setText(null);
+        if(!isReceiverAvailable){
+            try{
+            JSONArray tokens = new JSONArray();
+            tokens.put(receiverUser.token);
 
+            JSONObject data = new JSONObject();
+            data.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
+            data.put(Constants.KEY_NAME, preferencesManager.getString(Constants.KEY_NAME));
+            data.put(Constants.KEY_FCM_TOKEN, preferencesManager.getString(Constants.KEY_FCM_TOKEN));
+
+
+            data.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
+            JSONObject body = new JSONObject();
+            body.put(Constants.REMOTE_MSG_DATA, data);
+            body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+            sendNotification(body.toString());
+            }
+            catch (JSONException e) {
+                makeToast(e.getMessage());
+            }
+        }
+
+        binding.inputMessage.setText(null);
     }
+
+
     private void listenMessages(){
             database.collection(Constants.KEY_COLLECTION_CHAT)
         .whereEqualTo(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
@@ -100,6 +176,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
+
+
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
             return;
@@ -118,7 +196,43 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     chatMessage.clicked = false;
                     chatMessages.add(chatMessage);
                 }
+                if (documentChange.getType() == DocumentChange.Type.REMOVED){
+                    int position=-1;
+                    for( ChatMessage message: chatMessages){
+                        if (message.id.equals(documentChange.getDocument().getId())){
+                            position = chatMessages.indexOf(message);
+                            break;
+                        }
+                    }
+                    if(position>-1){
+                    chatMessages.remove(position);
+                    chatAdapter.notifyItemRemoved(position);
+                    }
+                }
+                if (documentChange.getType() == DocumentChange.Type.MODIFIED){
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                    chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                    chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
+                    chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
+                    chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    chatMessage.id =documentChange.getDocument().getId();
+                    chatMessage.clicked = false;
+                    int position =-1;
+                    for( ChatMessage message: chatMessages){
+                        if (message.id.equals(documentChange.getDocument().getId())){
+                            position = chatMessages.indexOf(message);
+                            break;
+                        }
+                    }
+                    if(position>-1){
+                        chatMessages.set(position, chatMessage);
+                        chatAdapter.notifyItemChanged(position);
+                    }
+
+                }
             }
+
             Collections.sort(chatMessages, (obj1, obj2)-> obj1.dateObject.compareTo(obj2.dateObject));
             if (count==0){
                 chatAdapter.notifyDataSetChanged();
@@ -133,15 +247,20 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             checkForConversation();
         }
     };
+
+
     private void loadReceiverDetail(){
         receiverUser = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
         binding.textName.setText(receiverUser.name);
     }
+
+
     private void setListeners() {
         binding.imageBack.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), RecentConversationsActivity.class)));
         binding.layoutSend.setOnClickListener(v -> sendMessage());
-
     }
+
+
     private void listenAvailabilityOfReceiver() {
         database.collection(Constants.KEY_COLLECTION_USERS).document(
                 receiverUser.id
@@ -166,15 +285,20 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             }
         });
     }
+
+
     private String getReadableDateTime(Date date){
         return new SimpleDateFormat("MMMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date);
-
     }
+
+
     private void addConversation(HashMap<String,Object> conversation){
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .add(conversation)
                 .addOnSuccessListener(documentReference -> conversationId=documentReference.getId());
     }
+
+
     private void updateConversation(String message){
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
         documentReference.update(
@@ -182,12 +306,17 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 Constants.KEY_TIMESTAMP, new Date()
         );
     }
+
+
     private void updateMessage(ChatMessage message){
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_CHAT).document(message.id);
         documentReference.update(
                 Constants.KEY_MESSAGE, message.message
         );
     }
+
+
+    //
     private void checkForConversation(){
         //if(chatMessages.size()!=0){
             checkForConversationRemotely(
@@ -198,9 +327,10 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     receiverUser.id,
                     preferencesManager.getString(Constants.KEY_USER_ID)
             );
-
-        //    }
         }
+
+
+    //
     private void checkForConversationRemotely(String senderId, String receiverId){
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .whereEqualTo(Constants.KEY_SENDER_ID,senderId)
@@ -208,6 +338,9 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 .get()
                 .addOnCompleteListener(conversationCompleteListener);
     }
+
+
+    //
     private final OnCompleteListener<QuerySnapshot> conversationCompleteListener = task -> {
         if(task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0){
             DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
@@ -217,6 +350,9 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
 
 
     // Actions with message
+
+
+    // deleting message
     private void deleteMessage(ChatMessage message, int position){
         database.collection(Constants.KEY_COLLECTION_CHAT).document(message.id).delete();
         chatAdapter.removeAt(position);
@@ -228,6 +364,9 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         }
         binding.actionsWithMessage.setVisibility(View.GONE);
     }
+
+
+    // editing message
     private void editMessage(ChatMessage message, int position){
         binding.inputMessage.setText(message.message);
         binding.layoutSend.setVisibility(View.INVISIBLE);
@@ -243,6 +382,9 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             updateConversation(message.message);
         });
     }
+
+
+
     @Override
     public void onMessageClick(ChatMessage message, int position){
         if (!message.clicked) {
@@ -260,6 +402,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     private void makeToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
+
     @Override
     protected void onResume(){
         super.onResume();

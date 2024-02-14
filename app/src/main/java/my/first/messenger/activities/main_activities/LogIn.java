@@ -29,8 +29,20 @@ public class LogIn extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // initializing classes
         preferenceManager = new PreferencesManager(getApplicationContext());
         user = new User();
+        preferenceManager.putBoolean(Constants.KEY_IS_GOING, false);
+
+        // checking if user is logged in
+    //    if(preferenceManager.getBoolean(Constants.KEY_IS_GOING)) {
+     //       Intent i  = new Intent(getApplicationContext(), RouteActivity.class);
+      //      startActivity(i);
+      //      finish();
+
+        // }
+
           if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
             Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
               user.id =  preferenceManager.getString(Constants.KEY_USER_ID);
@@ -44,31 +56,29 @@ public class LogIn extends AppCompatActivity {
             finish();
         }
 
-
         binding = LoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setListeners();
-       // VideoView videoview = (VideoView) findViewById(R.id.videoview);
-    //    Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.background);
-      //  binding.video.setVideoURI(uri);
-        //binding.video.start();
+
     }
+
         private void setListeners(){
 
-        binding.login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        // log in button pressed
+        binding.login.setOnClickListener(v-> {
                 checkUser(binding.email.getText().toString(), binding.password.getText().toString());
-            }
         });
-        binding.register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+
+        // register button pressed
+        binding.register.setOnClickListener(v-> {
+
                 Intent i = new Intent(LogIn.this, SignUp.class);
                 startActivity(i);
-            }
+
         });
     }
+
+    // check if user exist in database
     private void checkUser(String user_email, String user_password) {
         FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USERS)
@@ -95,7 +105,6 @@ public class LogIn extends AppCompatActivity {
                         intent.putExtra(Constants.KEY_USER, user);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                        makeToast("Yuy");
                     }
                     else {
                         makeToast("Не можем найти пользователя");

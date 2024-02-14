@@ -4,8 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/rectangle_background"
-    tools:context=".activities.main_activities.CoffeeshopFragment">
+    tools:context=".activities.fragments.CoffeeshopFragment">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/white"
+        android:background="@drawable/for_profile"
+        android:alpha="0.8"
+        android:orientation="vertical">
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imageBack"
         android:layout_width="@dimen/_40sdp"
@@ -14,7 +20,7 @@
         android:src="@drawable/ic_back"/>
     <ImageView
         android:layout_width="wrap_content"
-        android:layout_height="@dimen/_150sdp"
+        android:layout_height="@dimen/_100sdp"
         android:src="@drawable/logo"
         />
     <TextView
@@ -42,5 +48,6 @@
         android:text="Проложить маршрут"
         android:layout_gravity="center"
         android:backgroundTint="@color/whipped_cream"/>
+    </LinearLayout>
 
 </LinearLayout>

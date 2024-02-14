@@ -9,10 +9,12 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import my.first.messenger.R;
@@ -33,14 +35,10 @@ public class UsersFragment extends Fragment implements UsersListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
     private FragmentUsersBinding binding;
     private PreferencesManager preferenceManager;
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public UsersFragment() {
         // Required empty public constructor
@@ -55,7 +53,7 @@ public class UsersFragment extends Fragment implements UsersListener {
      * @return A new instance of fragment UsersFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static UsersFragment newInstance(){//String param1, String param2) {
+    public static UsersFragment newInstance(){
         UsersFragment fragment = new UsersFragment();
         Bundle args = new Bundle();
     //    args.putString(ARG_PARAM1, param1);
@@ -68,8 +66,6 @@ public class UsersFragment extends Fragment implements UsersListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -138,11 +134,69 @@ public class UsersFragment extends Fragment implements UsersListener {
                 });
 
     }
+    private void getActiveUsers(){
+        FirebaseFirestore database= FirebaseFirestore.getInstance();
+        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                .whereEqualTo("activated", true)
+                .get()
+                .addOnCompleteListener(task->{
+                    if(task.isSuccessful()&&task.getResult()!=null) {
+
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                                    .document(queryDocumentSnapshot.getId())
+                                    .collection(Constants.KEY_COLLECTION_USERS)
+                                    .get()
+                                    .addOnCompleteListener(task2 -> {
+                                        if(task2.isSuccessful()&&task2.getResult()!=null){
+                                            makeToast("here");
+                                            List<User> users = new ArrayList<>();
+
+                                            for( QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
+                                                User user = new User();
+                                                user.name =queryDocumentSnapshot2.getString(Constants.KEY_NAME);
+                                                user.image =queryDocumentSnapshot2.getString(Constants.KEY_NAME);
+                                                ///   user.image="byHHic3bEjQ6zHbFnblHIg==";
+                                                user.id=queryDocumentSnapshot2.getId();
+                                                users.add(user);
+                                            }
+                                            makeToast(users.size()+"");
+                                            UserAdapter userAdapter = new UserAdapter(users, this);
+                                            binding.usersRecycleView.setAdapter(userAdapter);
+                                            binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                        }
+                                    });
+                        }
+                    }});
+    }
     @Override
     public void onUserClick(User user){
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+      //  FirebaseFirestore database = FirebaseFirestore.getInstance();
+      //  database.collection(Constants.KEY_USER).document(user.id).get()
+        //        .addOnCompleteListener(task->{
+          //          DocumentSnapshot documentSnapshot = task.getResult();
+           //         user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
+            //        user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
+             //       user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
+             //   });
+        FirebaseFirestore database = FirebaseFirestore.getInstance();
+        HashMap<String, Object> updt = new HashMap<>();
+        updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+        updt.put(Constants.KEY_VISITOR_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+        updt.put(Constants.KEY_VISITED_ID, user.id);
+        updt.put(Constants.KEY_VISITOR_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        updt.put(Constants.KEY_VISITED_NAME, user.name);
+        updt.put(Constants.KEY_VISITOR_NAME, preferenceManager.getString(Constants.KEY_NAME));
+        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+        bundle.putSerializable(Constants.KEY_USER, user);
+        ProfileFragment frag = new ProfileFragment();
+        frag.setArguments(bundle);
+        getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
+
+        // startActivity(intent);
     }
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
