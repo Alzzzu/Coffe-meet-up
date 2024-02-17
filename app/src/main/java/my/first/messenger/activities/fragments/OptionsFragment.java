@@ -12,6 +12,11 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+
 import my.first.messenger.R;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
@@ -99,12 +104,24 @@ public class OptionsFragment extends Fragment {
     private void setListeners(){
         binding.done.setOnClickListener(v ->{
             if (checkAge()) {
+                if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+
+                    ActivatedUsersFragment activatedUsers = new ActivatedUsersFragment();
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                            .replace(R.id.fragment_container_view, activatedUsers)
+                            .addToBackStack(null)
+                            .commit();
+
+                }
+                else{
                 UsersFragment users = new UsersFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                         .replace(R.id.fragment_container_view, users)
                         .addToBackStack(null)
                         .commit();
+                }
             }
         });
         binding.female.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

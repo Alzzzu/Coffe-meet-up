@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -107,7 +108,6 @@ public class EditProfileActivity extends AppCompatActivity {
         });
     }
     private void updateUserInfo(){
-        boolean res = true;
          if (!(uri==null)){
             uploadImageProfile(uri);
             user.image = encodedImage;
@@ -131,6 +131,13 @@ public class EditProfileActivity extends AppCompatActivity {
                         Constants.KEY_HOBBIES, user.hobby,
                         Constants.KEY_ABOUT, user.about,
                         Constants.KEY_IMAGE, user.image);
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).whereEqualTo(Constants.KEY_SENDER_ID, user.id).get()
+                .addOnCompleteListener(task -> {
+                    for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(queryDocumentSnapshot.getId())
+                                .update(Constants.KEY_SENDER_IMAGE, user.image);
+                    }
+                });
 
       //  return res;
     }
@@ -229,7 +236,7 @@ public class EditProfileActivity extends AppCompatActivity {
                     binding.progress.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
             }
         });
-    //    return true;
+
     }
 
 

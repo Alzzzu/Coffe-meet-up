@@ -1,5 +1,9 @@
 package my.first.messenger.activities.fragments;
 
+import static java.lang.Double.parseDouble;
+import static java.lang.Long.parseLong;
+import static my.first.messenger.activities.main_activities.RouteActivity.distance;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +17,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.lang.ref.Cleaner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +79,8 @@ public class UsersFragment extends Fragment implements UsersListener {
                              Bundle savedInstanceState) {
         binding = FragmentUsersBinding.inflate(inflater, container, false);
         init();
-        getUsers();
+        //getUsers();
+        getActiveUsers();
         setListeners();
 
 
@@ -93,6 +99,60 @@ public class UsersFragment extends Fragment implements UsersListener {
                     .addToBackStack(null)
                     .commit();
         });
+    }
+    private void getActiveUsers(){
+        FirebaseFirestore database= FirebaseFirestore.getInstance();
+        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                .whereEqualTo("activated", true)
+                .get()
+                .addOnCompleteListener(task->{
+                    makeToast("here");
+
+                    if(task.isSuccessful()&&task.getResult()!=null) {
+                        List<User> users = new ArrayList<>();
+
+
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            double lat = queryDocumentSnapshot.getDouble("latitude");
+                            double lng = queryDocumentSnapshot.getDouble("longitude");
+                            if(2>distance(parseDouble(preferenceManager.getString(Constants.KEY_USER_LATITUDE)),parseDouble(preferenceManager.getString(Constants.KEY_USER_LONGITUDE)),lat, lng)){///getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLatitude(), getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLongitude())) {
+                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                                        .document(queryDocumentSnapshot.getId())
+                                        .collection(Constants.KEY_COLLECTION_USERS)
+                                        .whereEqualTo("status", "active")
+                                        .get()
+                                        .addOnCompleteListener(task2 -> {
+                                            if(task2.isSuccessful()&&task2.getResult()!=null){
+                                                for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
+                                                    if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
+                                                            &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
+                                                            && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferenceManager.getString(Constants.KEY_SEARCH_GENDER))) {
+
+                                                        User user = new User();
+                                                        user.id=queryDocumentSnapshot2.getString(Constants.KEY_USER_ID);
+                                                        user.name=queryDocumentSnapshot2.getString(Constants.KEY_NAME);
+                                                        user.image=queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
+                                                        user.age=queryDocumentSnapshot2.getLong(Constants.KEY_AGE).toString();
+                                                        users.add(user);
+                                                    }
+                                                }
+                                            }
+                                            UserAdapter userAdapter = new UserAdapter(users, this);
+                                            binding.usersRecycleView.setAdapter(userAdapter);
+                                            binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                        });
+                                if (users.size()>0){
+                                    UserAdapter userAdapter = new UserAdapter(users, this);
+                                    binding.usersRecycleView.setAdapter(userAdapter);
+                                    binding.usersRecycleView.setVisibility(View.VISIBLE);
+
+
+                                }
+
+                            }
+                        }
+                    }});
+
     }
     private void getUsers(){
        // makeToast(preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+"");
@@ -134,41 +194,6 @@ public class UsersFragment extends Fragment implements UsersListener {
                 });
 
     }
-    private void getActiveUsers(){
-        FirebaseFirestore database= FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                .whereEqualTo("activated", true)
-                .get()
-                .addOnCompleteListener(task->{
-                    if(task.isSuccessful()&&task.getResult()!=null) {
-
-                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                                    .document(queryDocumentSnapshot.getId())
-                                    .collection(Constants.KEY_COLLECTION_USERS)
-                                    .get()
-                                    .addOnCompleteListener(task2 -> {
-                                        if(task2.isSuccessful()&&task2.getResult()!=null){
-                                            makeToast("here");
-                                            List<User> users = new ArrayList<>();
-
-                                            for( QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
-                                                User user = new User();
-                                                user.name =queryDocumentSnapshot2.getString(Constants.KEY_NAME);
-                                                user.image =queryDocumentSnapshot2.getString(Constants.KEY_NAME);
-                                                ///   user.image="byHHic3bEjQ6zHbFnblHIg==";
-                                                user.id=queryDocumentSnapshot2.getId();
-                                                users.add(user);
-                                            }
-                                            makeToast(users.size()+"");
-                                            UserAdapter userAdapter = new UserAdapter(users, this);
-                                            binding.usersRecycleView.setAdapter(userAdapter);
-                                            binding.usersRecycleView.setVisibility(View.VISIBLE);
-                                        }
-                                    });
-                        }
-                    }});
-    }
     @Override
     public void onUserClick(User user){
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
@@ -182,16 +207,9 @@ public class UsersFragment extends Fragment implements UsersListener {
             //        user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
              //       user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
              //   });
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
-        HashMap<String, Object> updt = new HashMap<>();
-        updt.put(Constants.KEY_VISITED_IMAGE, user.image);
-        updt.put(Constants.KEY_VISITOR_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
-        updt.put(Constants.KEY_VISITED_ID, user.id);
-        updt.put(Constants.KEY_VISITOR_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-        updt.put(Constants.KEY_VISITED_NAME, user.name);
-        updt.put(Constants.KEY_VISITOR_NAME, preferenceManager.getString(Constants.KEY_NAME));
-        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+
         bundle.putSerializable(Constants.KEY_USER, user);
+        bundle.putBoolean("visitor", true);
         ProfileFragment frag = new ProfileFragment();
         frag.setArguments(bundle);
         getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
@@ -201,4 +219,5 @@ public class UsersFragment extends Fragment implements UsersListener {
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
+
 }

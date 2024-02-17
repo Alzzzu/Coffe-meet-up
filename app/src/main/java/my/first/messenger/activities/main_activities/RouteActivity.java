@@ -79,8 +79,8 @@ public class RouteActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //  StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        // StrictMode.setThreadPolicy(policy);
+          StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+         StrictMode.setThreadPolicy(policy);
 
         binding = ActivityRouteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -125,7 +125,8 @@ public class RouteActivity extends AppCompatActivity {
         this.mLocationOverlay.enableFollowLocation();
         map.getOverlays().add(this.mLocationOverlay);
         FirebaseFirestore database = FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id).get().addOnCompleteListener(task -> {
+        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id).get()
+                .addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 double lng = task.getResult().getDouble("longitude");
                 double lat = task.getResult().getDouble("latitude");
@@ -138,7 +139,7 @@ public class RouteActivity extends AppCompatActivity {
                 map.getOverlays().add(marker);
                 marker.setIcon(getResources().getDrawable(R.mipmap.coffee_colour));
                 marker.setTitle("here");
-                routing(lat, lng);
+                     routing(lat, lng);
 
             }
 
@@ -148,6 +149,7 @@ public class RouteActivity extends AppCompatActivity {
 
     private void setListeners() {
         binding.cancel.setOnClickListener(v -> {
+            preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -226,10 +228,10 @@ public class RouteActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                        GeoPoint g = new GeoPoint(new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
+                      //  GeoPoint g = new GeoPoint(new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
                         RoadManager roadManager = new OSRMRoadManager(getApplicationContext(), "coffeeshopperhere");
                         ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
-                        waypoints.add(g);
+                        waypoints.add(userLoc);
                         waypoints.add(new GeoPoint(lat, lng));
                         ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT);
 
@@ -268,7 +270,7 @@ public class RouteActivity extends AppCompatActivity {
 
     }
 
-    private static double distance(double lat1, double lon1, double lat2, double lon2) {
+    public static double distance(double lat1, double lon1, double lat2, double lon2) {
         if ((lat1 == lat2) && (lon1 == lon2)) {
             return 0;
         } else {

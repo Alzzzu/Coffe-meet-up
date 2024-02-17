@@ -1,5 +1,9 @@
 package my.first.messenger.activities.main_activities;
 
+import static java.lang.Double.parseDouble;
+
+import static my.first.messenger.activities.main_activities.RouteActivity.distance;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
@@ -37,8 +41,6 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
     private ActivityActivatedBinding binding;
 
     private PreferencesManager preferencesManager;
-    private ArrayList<User> users;
-    private UserAdapter userAdapter;
 
 
 
@@ -47,16 +49,47 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
         super.onCreate(savedInstanceState);
         binding = ActivityActivatedBinding.inflate(getLayoutInflater());
         preferencesManager = new PreferencesManager(getApplicationContext());
-        ArrayList<User> users = new ArrayList<>();
-        userAdapter = new UserAdapter(users, this);
 
         setContentView(binding.getRoot());
         //getUsers();
-        //getActiveUsers();
-        getMeetingUsers();
+       // getActiveUsers();
+        // getMeetingUsers();
+        makeToast(preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)+" "+preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+preferencesManager.getString(Constants.KEY_SEARCH_GENDER));
         setListeners();
     }
     private void setListeners(){
+        binding.cancel.setOnClickListener(v->{
+            String id = preferencesManager.getString(Constants.KEY_COFFEESHOP_ID);
+            preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+
+
+            database.collection("coffeeshops").document(id)
+                    .collection(Constants.KEY_COLLECTION_USERS)
+                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+
+
+            if (database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                     .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+                    .collection(Constants.KEY_COLLECTION_USERS).count().equals(0)){
+               database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+                    .update("activated", false);
+                }
+            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).
+                    whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        for(QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).
+                                    document(queryDocumentSnapshot.getId()).delete();
+                        }
+                    });
+
+
+            Intent i = new Intent(getApplicationContext(), MapActivity.class);
+            startActivity(i);
+        });
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -97,66 +130,91 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
                 .get()
                 .addOnCompleteListener(task->{
                     if(task.isSuccessful()&&task.getResult()!=null) {
+                        List<User> users = new ArrayList<>();
+
 
                         for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+
+                            double lat = queryDocumentSnapshot.getDouble("latitude");
+                            double lng = queryDocumentSnapshot.getDouble("longitude");
+                            if(2>distance(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)),parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE)),lat, lng)){///getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLatitude(), getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLongitude())) {
+                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
                                     .document(queryDocumentSnapshot.getId())
                                     .collection(Constants.KEY_COLLECTION_USERS)
+                                        .whereEqualTo("status", "active")
+                                    .whereEqualTo(Constants.KEY_GENDER, "")//preferencesManager.getString(Constants.KEY_SEARCH_GENDER))
                                     .get()
                                     .addOnCompleteListener(task2 -> {
                                         if(task2.isSuccessful()&&task2.getResult()!=null){
-                                            List<User> users = new ArrayList<>();
+                                            for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
+                                                if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
+                                                    &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
+                                               && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferencesManager.getString(Constants.KEY_SEARCH_GENDER))) {
 
-                                            for( QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
-                                                User user = new User();
-                                                user.name =queryDocumentSnapshot2.getString(Constants.KEY_NAME);
-                                                user.image =queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
+                                                    User user = new User();
+                                                user.id=queryDocumentSnapshot2.getString(Constants.KEY_USER_ID);
+                                                user.name=queryDocumentSnapshot2.getString(Constants.KEY_NAME);
+                                                user.image=queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
+                                                user.age=queryDocumentSnapshot2.getLong(Constants.KEY_AGE).toString();
                                                 users.add(user);
+                                                }
+                                            }
                                         }
-                                            UserAdapter userAdapter = new UserAdapter(users, this);
-                                            binding.usersRecycleView.setAdapter(userAdapter);
-                                            binding.usersRecycleView.setVisibility(View.VISIBLE);
-                                    }
-                        });
+                                        UserAdapter userAdapter = new UserAdapter(users, this);
+                                        binding.usersRecycleView.setAdapter(userAdapter);
+                                        binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                    });
+                                if (users.size()>0){
+                                    UserAdapter userAdapter = new UserAdapter(users, this);
+                                    binding.usersRecycleView.setAdapter(userAdapter);
+                                    binding.usersRecycleView.setVisibility(View.VISIBLE);
+
+
+                                }
+
+                            }
                         }
-                    }});
+                }});
+
     }
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
             return;
         }
         if (value != null) {
-            int count = users.size();
+            //    int count = users.size();
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     User user = new User();
-                    user.name =documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME);
-                    user.image =documentChange.getDocument().getString(Constants.KEY_VISITOR_IMAGE);
-                    users.add(user);
+                    user.name = documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME);
+                    user.image = documentChange.getDocument().getString(Constants.KEY_VISITOR_IMAGE);
+                    //              users.add(user);
                 }
-                if (documentChange.getType() == DocumentChange.Type.REMOVED){
-                    int position=-1;
-                    for( User user: users){
-                        if (user.id.equals(documentChange.getDocument().getString(Constants.KEY_VISITED_ID))){
-                            position = users.indexOf(user);
-                            break;
-                        }
-                    }
-                    if(position>-1){
-                        users.remove(position);
-                        userAdapter.notifyItemRemoved(position);
+                if (documentChange.getType() == DocumentChange.Type.REMOVED) {
+                    int position = -1;
+                    //         for( User user: users){
+                    //           if (user.id.equals(documentChange.getDocument().getString(Constants.KEY_VISITED_ID))){
+                    //                   position = users.indexOf(user);
+                    //              break;
+                    //         }
+                    //   }
+                    if (position > -1) {
+                        //                  users.remove(position);
+                        //                 userAdapter.notifyItemRemoved(position);
                     }
 
+                }
             }
-    }
-            if (count==0){
-                userAdapter.notifyDataSetChanged();
-            }
-            else{
-                userAdapter.notifyItemRangeInserted(users.size(), users.size());
-                binding.usersRecycleView.smoothScrollToPosition(users.size()-1);
-            }
-            binding.usersRecycleView.setVisibility(View.VISIBLE);
+            //      if (count==0){
+            //        userAdapter.notifyDataSetChanged();
+            //   }
+            // else{
+            //   userAdapter.notifyItemRangeInserted(users.size(), users.size());
+            //     binding.usersRecycleView.smoothScrollToPosition(users.size()-1);
+            //  }
+            // binding.usersRecycleView.setVisibility(View.VISIBLE);
+            /// }
+            //};
         }
         };
 
@@ -164,7 +222,7 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
         FirebaseFirestore database= FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
                 .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .whereNotEqualTo(Constants.KEY_GENDER,  preferencesManager.getString(Constants.KEY_SEARCH_GENDER))
+               // .whereNotEqualTo(Constants.KEY_GENDER,  preferencesManager.getString(Constants.KEY_SEARCH_GENDER))
                 .get()
                   .addOnCompleteListener(task->{
                     if(task.isSuccessful()&&task.getResult()!=null) {
@@ -224,4 +282,5 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
     private  void makeToast(String message){
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
     }
+
 }

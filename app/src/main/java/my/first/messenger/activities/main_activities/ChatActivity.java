@@ -1,9 +1,6 @@
 package my.first.messenger.activities.main_activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.icu.text.Edits;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -15,8 +12,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonIOException;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.json.JSONArray;
@@ -34,7 +30,6 @@ import java.util.Objects;
 
 import my.first.messenger.R;
 import my.first.messenger.activities.adapters.ChatAdapter;
-import my.first.messenger.activities.adapters.ImageAdapter;
 import my.first.messenger.activities.listeners.ChatMessageListener;
 import my.first.messenger.activities.models.ChatMessage;
 import my.first.messenger.activities.models.User;
@@ -59,11 +54,14 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
+
+
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        init();
         setListeners();
         loadReceiverDetail();
-        init();
         listenMessages();
     }
     private void init(){
@@ -117,9 +115,19 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         });
 
     }
+    private void sendLocation(){
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("type","location");
+        message.put(Constants.KEY_SENDER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
+        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+        message.put(Constants.KEY_COFFEESHOP_ID, preferencesManager.getString(Constants.KEY_COFFEESHOP_ID));//binding.inputMessage.getText().toString());
+        message.put(Constants.KEY_TIMESTAMP, new Date());
+        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
 
+    }
     private void sendMessage(){
         HashMap<String, Object> message = new HashMap<>();
+        message.put("type","message");
         message.put(Constants.KEY_SENDER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
         message.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
@@ -186,6 +194,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             int count = chatMessages.size();
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
+                    if (documentChange.getDocument().getString("type").equals("message")){
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -193,9 +202,24 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessage.id =documentChange.getDocument().getId();
+                    chatMessage.type =documentChange.getDocument().getString("type");
                     chatMessage.clicked = false;
                     chatMessages.add(chatMessage);
-                }
+                    }
+                    else{
+                        ChatMessage chatMessage = new ChatMessage();
+                        chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                        chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        chatMessage.coffeeshopId = documentChange.getDocument().getString(Constants.KEY_COFFEESHOP_ID);
+                        chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
+                        chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                        chatMessage.id =documentChange.getDocument().getId();
+                        chatMessage.type =documentChange.getDocument().getString("type");
+                        chatMessage.clicked = false;
+                        chatMessages.add(chatMessage);
+
+
+                    }}
                 if (documentChange.getType() == DocumentChange.Type.REMOVED){
                     int position=-1;
                     for( ChatMessage message: chatMessages){
@@ -238,8 +262,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 chatAdapter.notifyDataSetChanged();
             }
             else{
-                chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
-                binding.chatRecycleView.smoothScrollToPosition(chatMessages.size()-1);
+                chatAdapter.notifyItemRangeInserted(count, chatMessages.size());
+                binding.chatRecycleView.smoothScrollToPosition(chatMessages.size());
             }
             binding.chatRecycleView.setVisibility(View.VISIBLE);
         }
@@ -252,12 +276,16 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     private void loadReceiverDetail(){
         receiverUser = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
         binding.textName.setText(receiverUser.name);
+        if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+             binding.layoutSendLocation.setVisibility(View.VISIBLE);
+        }
     }
 
 
     private void setListeners() {
         binding.imageBack.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), RecentConversationsActivity.class)));
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+        binding.layoutSendLocation.setOnClickListener(v->sendLocation());
     }
 
 
@@ -387,6 +415,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
 
     @Override
     public void onMessageClick(ChatMessage message, int position){
+        if(message.type.equals("message")){
         if (!message.clicked) {
             binding.actionsWithMessage.setVisibility(View.VISIBLE);
             binding.deleteMessage.setOnClickListener(v -> deleteMessage(message, position));
@@ -395,6 +424,13 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         else{
 
             binding.actionsWithMessage.setVisibility(View.GONE);
+        }
+        }
+        else{
+            makeToast(message.coffeeshopId);
+            preferencesManager.putBoolean(Constants.KEY_IS_GOING, true);
+            preferencesManager.putString(Constants.KEY_COFFEESHOP_ID, message.coffeeshopId);
+            deleteMessage(message, position);
         }
     }
 
@@ -409,4 +445,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         super.onResume();
         listenAvailabilityOfReceiver();
     }
+
+
 }

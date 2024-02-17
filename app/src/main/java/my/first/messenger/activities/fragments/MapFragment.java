@@ -79,8 +79,6 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-       // binding = FragmentMapBinding.inflate(inflater, container, false);
 
         binding = FragmentMapBinding.inflate(inflater, container, false);
         init();
@@ -202,7 +200,7 @@ public class MapFragment extends Fragment {
         }
         return null;
     }
-    private static double distance(double lat1, double lon1, double lat2, double lon2) {
+    public static double distance(double lat1, double lon1, double lat2, double lon2) {
         if ((lat1 == lat2) && (lon1 == lon2)) {
             return 0;
         }

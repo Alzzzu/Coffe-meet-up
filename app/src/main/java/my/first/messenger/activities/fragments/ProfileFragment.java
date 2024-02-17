@@ -2,6 +2,8 @@ package my.first.messenger.activities.fragments;
 
 import static android.app.Activity.RESULT_OK;
 
+import static java.lang.Long.parseLong;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
@@ -33,6 +36,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -78,16 +82,18 @@ public class ProfileFragment extends Fragment {
     private ImageDisplayAdapter imageAdapter;
 
     private Boolean clicked;
+    private boolean type;
     private Image image;
 
     public ProfileFragment(){
         // Required empty public constructor
     }
     // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(User user) {
+    public static ProfileFragment newInstance(User user, Boolean type) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putSerializable(Constants.KEY_USER, user);
+      //  args.putBoolean("visitor", type);
         //  args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
@@ -98,6 +104,7 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             user = (User) getArguments().getSerializable(Constants.KEY_USER);
+            type = getArguments().getBoolean("visitor");
         }
     }
 
@@ -148,18 +155,29 @@ public class ProfileFragment extends Fragment {
 
     private void setListeners() {
 
-
-
-
         //Redirecting to chatActivity
         binding.buttonToText.setOnClickListener(v ->{
+            if (type){
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+            if(database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID)).count().equals(0)){
+            HashMap<String, Object> updt = new HashMap<>();
+            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
+            updt.put(Constants.KEY_VISITED_ID, user.id);
+            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
+            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
+            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+            updt.put(Constants.KEY_VISITED_NAME, user.name);
+            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
+            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+            }
+        }
+            else{
             Intent intent = new Intent(getActivity(), ChatActivity.class);
             intent.putExtra(Constants.KEY_USER, user);
             startActivity(intent);
-           // finish();}
             }
-        );
-
+        });
 
         //back
         binding.imageBack.setOnClickListener(v-> {

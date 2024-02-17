@@ -44,13 +44,13 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         return new ReceivedMessageViewHolder(ItemContainerReceivedMessageBinding.inflate(
                 LayoutInflater.from(parent.getContext()),
                 parent,
-                false));
+                false),chatMessageListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if(getItemViewType(position)==VIEW_TYPE_SENT){
-          //  holder.itemView.setSelected(focusedItem == position);
+            //  holder.itemView.setSelected(focusedItem == position);
             ((SentMessageViewHolder)holder).setData(chatMessages.get(position));
 
         } else{
@@ -105,17 +105,22 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
 
     }
-        static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
-            private final ItemContainerReceivedMessageBinding binding;
-            ReceivedMessageViewHolder(ItemContainerReceivedMessageBinding itemContainerReceivedMessageBinding){
-                super(itemContainerReceivedMessageBinding.getRoot());
-                binding = itemContainerReceivedMessageBinding;
-            }
-            void setData(ChatMessage chatMessage){
-                binding.textMessageReceived.setText(chatMessage.message);
-                binding.textDateTime.setText(chatMessage.dateTime);
+    static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
+        private final ItemContainerReceivedMessageBinding binding;
+        private final ChatMessageListener chatMessageListener;
+        ReceivedMessageViewHolder(ItemContainerReceivedMessageBinding itemContainerReceivedMessageBinding, ChatMessageListener chatMessageListener){
+            super(itemContainerReceivedMessageBinding.getRoot());
+            binding = itemContainerReceivedMessageBinding;
+            this.chatMessageListener = chatMessageListener;
+        }
+        void setData(ChatMessage chatMessage){
+            binding.textMessageReceived.setText(chatMessage.message);
+            binding.textDateTime.setText(chatMessage.dateTime);
+            if(chatMessage.type.equals("location")){
+                binding.getRoot().setOnClickListener(v->{chatMessageListener.onMessageClick(chatMessage, getAdapterPosition());});
             }
         }
+    }
     public void removeAt(int position) {
         chatMessages.remove(position);
         notifyItemRemoved(position);
@@ -127,4 +132,4 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     }
 
 
-    }
+}

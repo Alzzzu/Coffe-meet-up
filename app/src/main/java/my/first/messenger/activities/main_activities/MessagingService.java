@@ -4,6 +4,7 @@ package my.first.messenger.activities.main_activities;
 import static android.app.job.JobInfo.PRIORITY_DEFAULT;
 
 import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -97,6 +98,22 @@ public class MessagingService extends FirebaseMessagingService {
 
     }
     void showNotification(String title, String message) {
+            PendingIntent pi=PendingIntent.getActivity(this,0, new Intent(this,MainActivity.class), 0);
+            Notification notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_back)
+                    .setContentTitle("TechEduTricks")
+                    .setContentText(message)
+                    .setContentIntent(pi)
+                    .setAutoCancel(true)
+                    .setDefaults(Notification.FLAG_ONLY_ALERT_ONCE)
+                    .setDefaults(Notification.DEFAULT_SOUND)
+                    .setDefaults(Notification.DEFAULT_VIBRATE)
+                    .build();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(0, notification);
+
+
+
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -112,8 +129,8 @@ public class MessagingService extends FirebaseMessagingService {
                 .setContentText(message)// message for notification
                 .setAutoCancel(true); // clear notification after click
         Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(pi);
+        PendingIntent pir = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(pir);
         mNotificationManager.notify(0, mBuilder.build());
     }
 

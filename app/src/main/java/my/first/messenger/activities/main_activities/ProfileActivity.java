@@ -166,19 +166,27 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                     }
                 });
 
-        // delete from coffeeshop
-        if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)||preferencesManager.getBoolean(Constants.KEY_IS_GOING)) {
-            database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-                    .collection(Constants.KEY_COLLECTION_USERS)
-                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+        // UNCOMMENT LATER!!!!!
 
-            if (database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                    .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-                    .collection(Constants.KEY_COLLECTION_USERS).count().equals(0)){
 
-            }
 
-        }
+        //   if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)||preferencesManager.getBoolean(Constants.KEY_IS_GOING)) {
+         //   database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+          //          .collection(Constants.KEY_COLLECTION_USERS)
+           //         .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+
+         //   if (database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+           //         .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+            //        .collection(Constants.KEY_COLLECTION_USERS).count().equals(0)){
+             //   database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
+              //          .update("activated", false);
+
+            //}
+
+       // }
+
+
+
         DocumentReference documentReference =
                 database.collection(Constants.KEY_COLLECTION_USERS).document( preferencesManager.getString(Constants.KEY_USER_ID)
                 );

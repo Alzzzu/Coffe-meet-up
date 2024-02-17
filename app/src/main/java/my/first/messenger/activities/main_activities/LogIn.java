@@ -14,6 +14,7 @@ import android.widget.VideoView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import my.first.messenger.R;
 import my.first.messenger.activities.models.User;
@@ -29,11 +30,14 @@ public class LogIn extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
+
+
 
         // initializing classes
         preferenceManager = new PreferencesManager(getApplicationContext());
         user = new User();
-        preferenceManager.putBoolean(Constants.KEY_IS_GOING, false);
+   //     preferenceManager.putBoolean(Constants.KEY_IS_GOING, false);
 
         // checking if user is logged in
     //    if(preferenceManager.getBoolean(Constants.KEY_IS_GOING)) {
@@ -50,6 +54,7 @@ public class LogIn extends AppCompatActivity {
               user.hobby =preferenceManager.getString(Constants.KEY_HOBBIES);
               user.name =preferenceManager.getString(Constants.KEY_NAME);
               user.age = preferenceManager.getString(Constants.KEY_AGE);
+              user.gender = preferenceManager.getString(Constants.KEY_GENDER);
               user.image =preferenceManager.getString(Constants.KEY_IMAGE);
             i.putExtra(Constants.KEY_USER, user);
             startActivity(i);
@@ -94,11 +99,13 @@ public class LogIn extends AppCompatActivity {
                         preferenceManager.putString(Constants.KEY_AGE, ((documentSnapshot.getLong(Constants.KEY_AGE)).toString()));
                         preferenceManager.putString(Constants.KEY_HOBBIES, documentSnapshot.getString(Constants.KEY_HOBBIES));
                         preferenceManager.putString(Constants.KEY_ABOUT, documentSnapshot.getString(Constants.KEY_ABOUT));
+                        preferenceManager.putString(Constants.KEY_GENDER, documentSnapshot.getString(Constants.KEY_GENDER));
                         preferenceManager.putString(Constants.KEY_IMAGE, documentSnapshot.getString(Constants.KEY_IMAGE));
                         user.id =  documentSnapshot.getId();
                         user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
                         user.hobby =documentSnapshot.getString(Constants.KEY_HOBBIES);
                         user.name =documentSnapshot.getString(Constants.KEY_NAME);
+                        user.gender =documentSnapshot.getString(Constants.KEY_GENDER);
                         user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
                         user.image =documentSnapshot.getString(Constants.KEY_IMAGE);
                         Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
