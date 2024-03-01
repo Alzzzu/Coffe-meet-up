@@ -14,6 +14,7 @@ import android.widget.VideoView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import my.first.messenger.R;
@@ -37,15 +38,15 @@ public class LogIn extends AppCompatActivity {
         // initializing classes
         preferenceManager = new PreferencesManager(getApplicationContext());
         user = new User();
-   //     preferenceManager.putBoolean(Constants.KEY_IS_GOING, false);
+       FirebaseFirestore db = FirebaseFirestore.getInstance();
+   //     db.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID))
+    //            .get().addOnCompleteListener(task->{
+     //               if(task.getResult().getBoolean("visited")){
+      //                  preferenceManager.putString(Constants.KEY_IS_VISITED, true);
+       //             }
 
-        // checking if user is logged in
-    //    if(preferenceManager.getBoolean(Constants.KEY_IS_GOING)) {
-     //       Intent i  = new Intent(getApplicationContext(), RouteActivity.class);
-      //      startActivity(i);
-      //      finish();
-
-        // }
+       //                 }
+        //        );
 
           if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
             Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
@@ -56,6 +57,15 @@ public class LogIn extends AppCompatActivity {
               user.age = preferenceManager.getString(Constants.KEY_AGE);
               user.gender = preferenceManager.getString(Constants.KEY_GENDER);
               user.image =preferenceManager.getString(Constants.KEY_IMAGE);
+              db.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,user.id)
+                              .get().addOnCompleteListener(task->{
+                                  for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                                      preferenceManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                                      preferenceManager.putBoolean(Constants.KEY_IS_VISITED, true);
+                                      preferenceManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
+                                  }
+
+                      });
             i.putExtra(Constants.KEY_USER, user);
             startActivity(i);
             finish();

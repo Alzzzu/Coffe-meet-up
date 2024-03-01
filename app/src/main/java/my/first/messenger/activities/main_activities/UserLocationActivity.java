@@ -1,5 +1,7 @@
 package my.first.messenger.activities.main_activities;
 
+import static android.widget.Toast.makeText;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -10,9 +12,12 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,7 +50,7 @@ public class UserLocationActivity extends AppCompatActivity {
 
     // Initializing other items
     // from layout file
-    TextView latitudeTextView, longitTextView;
+   // TextView latitudeTextView, longitTextView;
     int PERMISSION_ID = 44;
     Button butt;
 
@@ -55,14 +60,32 @@ public class UserLocationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_location);
         preferencesManager = new PreferencesManager(this);
 
-        latitudeTextView = findViewById(R.id.latTextView);
-        longitTextView = findViewById(R.id.lonTextView);
+   //     latitudeTextView = findViewById(R.id.latTextView);
+  //      longitTextView = findViewById(R.id.lonTextView);
         FirebaseFirestore database = FirebaseFirestore.getInstance();
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // method to get the location
-        getLastLocation();
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+     //   getLastLocation();
+    }
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==R.id.sign_out){
+
+                Toast.makeText(this, "You clicked new group", Toast.LENGTH_SHORT).show();
+        }
+        else if (item.getItemId()==R.id.edit){
+                Toast.makeText(this, "You clicked new groin", Toast.LENGTH_SHORT).show();
+        }
+        return true;
     }
 
     @SuppressLint("MissingPermission")
@@ -84,8 +107,8 @@ public class UserLocationActivity extends AppCompatActivity {
                         if (location == null) {
                             requestNewLocationData();
                         } else {
-                            latitudeTextView.setText(location.getLatitude() + "");
-                            longitTextView.setText(location.getLongitude() + "");
+                            //latitudeTextView.setText(location.getLatitude() + "");
+                            // longitTextView.setText(location.getLongitude() + "");
                             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
                             preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
                             Intent i = new Intent(getApplicationContext(), MapActivity.class);
@@ -96,7 +119,7 @@ public class UserLocationActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                Toast.makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
+                makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
             }

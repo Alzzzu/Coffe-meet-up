@@ -41,6 +41,7 @@ public class CoffeeshopFragment extends Fragment {
     private String id;
     private FragmentCoffeeshopBinding binding;
     private PreferencesManager preferencesManager;
+    private FirebaseFirestore database;
 
     public CoffeeshopFragment() {
         // Required empty public constructor
@@ -74,8 +75,8 @@ public class CoffeeshopFragment extends Fragment {
             address = getArguments().getString(Constants.KEY_ADDRESS);
             name = getArguments().getString(Constants.KEY_NAME);
             id = getArguments().getString(Constants.KEY_COFFEESHOP_ID);
-        //    coffeeshop = (Coffeeshop) getArguments().getSerializable("coffeeshop");
             preferencesManager = new PreferencesManager(getActivity());
+            database = FirebaseFirestore.getInstance();
         }
     }
 
@@ -98,14 +99,15 @@ public class CoffeeshopFragment extends Fragment {
             HashMap<String, Object> user = new HashMap<>();
             user.put("status","going");
             user.put(Constants.KEY_NAME,preferencesManager.getString(Constants.KEY_NAME));
+            user.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
             user.put(Constants.KEY_IMAGE,preferencesManager.getString(Constants.KEY_IMAGE));
             user.put(Constants.KEY_GENDER,preferencesManager.getString(Constants.KEY_GENDER));
             user.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
             user.put(Constants.KEY_AGE,parseLong(preferencesManager.getString(Constants.KEY_AGE)));
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("coffeeshops").document(id)
+
+            database.collection("coffeeshops").document(id)
                     .update("activated", true);
-            db.collection("coffeeshops").document(id)
+            database.collection("coffeeshops").document(id)
                     .collection(Constants.KEY_COLLECTION_USERS).document(preferencesManager.getString(Constants.KEY_USER_ID)).set(user);
             Intent intent = new Intent(getActivity(), RouteActivity.class);
             intent.putExtra(Constants.KEY_COFFEESHOP_ID,id);

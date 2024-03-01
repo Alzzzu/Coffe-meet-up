@@ -39,7 +39,6 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
         super.onCreate(savedInstanceState);
         binding = ActivityChatListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        //setContentView(R.layout.activity_for_test);
         init();
         setOnListeners();
         listenConversations();
@@ -68,6 +67,9 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
                     }
                     else if (preferenceManager.getBoolean(Constants.KEY_IS_GOING)){
                         startActivity(new Intent(getApplicationContext(),RouteActivity.class));
+                    }
+                    else if(preferenceManager.getBoolean(Constants.KEY_IS_VISITED)){
+                        startActivity(new Intent(getApplicationContext(),VisitedActivity.class));
                     }
                     else {
                         startActivity(new Intent(getApplicationContext(), UserLocationActivity.class));

@@ -39,7 +39,6 @@ import my.first.messenger.databinding.ActivityActivatedBinding;
 
 public class ActivatedActivity extends FragmentActivity implements UsersListener {
     private ActivityActivatedBinding binding;
-
     private PreferencesManager preferencesManager;
 
 
@@ -50,11 +49,20 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
         binding = ActivityActivatedBinding.inflate(getLayoutInflater());
         preferencesManager = new PreferencesManager(getApplicationContext());
 
+        FirebaseFirestore.getInstance().collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,preferencesManager.getString(Constants.KEY_USER_ID))
+                .get().addOnCompleteListener(task->{
+                    for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                        preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                        preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
+                        preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
+                    }
+
+                });
+
         setContentView(binding.getRoot());
         //getUsers();
        // getActiveUsers();
         // getMeetingUsers();
-        makeToast(preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)+" "+preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+preferencesManager.getString(Constants.KEY_SEARCH_GENDER));
         setListeners();
     }
     private void setListeners(){
@@ -65,7 +73,7 @@ public class ActivatedActivity extends FragmentActivity implements UsersListener
             FirebaseFirestore database = FirebaseFirestore.getInstance();
 
 
-            database.collection("coffeeshops").document(id)
+            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                     .collection(Constants.KEY_COLLECTION_USERS)
                     .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
 

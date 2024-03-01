@@ -1,4 +1,5 @@
 package my.first.messenger.activities.adapters;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,12 +84,18 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         }
 
         void setData(ChatMessage chatMessage) {
+            if(chatMessage.type.equals("location")){
+                binding.textMessageSent.setText("LOCATION ☕");
+
+            }
+            else{
             binding.textMessageSent.setText(chatMessage.message);
             binding.textDateTime.setText(chatMessage.dateTime);
 
             binding.getRoot().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
                     if (!chatMessage.clicked) {
                         chatMessageListener.onMessageClick(chatMessage, getAdapterPosition());
                         binding.textMessageSent.setBackground(ContextCompat.getDrawable(v.getContext(), R.drawable.background_selected_message));
@@ -96,11 +103,13 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
                     }
                     else{
                         chatMessageListener.onMessageClick(chatMessage, getAdapterPosition());
-                        chatMessage.clicked = false;
                         binding.textMessageSent.setBackground(ContextCompat.getDrawable(v.getContext(), R.drawable.background_sent_message));
+                        chatMessage.clicked = false;
+
                     }
                 }
             });
+            }
         }
 
 
@@ -129,6 +138,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     public void editAt(int position, ChatMessage message){
         chatMessages.set(position, message);
         notifyItemChanged(position);
+
     }
 
 

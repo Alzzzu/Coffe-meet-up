@@ -28,7 +28,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.OnProgressListener;
@@ -157,22 +160,34 @@ public class ProfileFragment extends Fragment {
 
         //Redirecting to chatActivity
         binding.buttonToText.setOnClickListener(v ->{
-            if (type){
-            FirebaseFirestore database = FirebaseFirestore.getInstance();
-            if(database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID)).count().equals(0)){
-            HashMap<String, Object> updt = new HashMap<>();
-            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
-            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
-            updt.put(Constants.KEY_VISITED_ID, user.id);
-            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
-            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
-            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
-            updt.put(Constants.KEY_VISITED_NAME, user.name);
-            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
-            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
-            }
+            if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+                FirebaseFirestore database = FirebaseFirestore.getInstance();
+            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task->{
+                        int count=0;
+                        for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                            count+=1;
+
+                        }
+                        if(count==0){
+                            HashMap<String, Object> updt = new HashMap<>();
+                            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+                            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
+                            updt.put(Constants.KEY_VISITED_ID, user.id);
+                            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
+                            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
+                            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+                            updt.put(Constants.KEY_VISITED_NAME, user.name);
+                            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
+                            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+                            makeToast("запрос отправлен");
+                        }
+                    }
+                    );
         }
             else{
+            preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
             Intent intent = new Intent(getActivity(), ChatActivity.class);
             intent.putExtra(Constants.KEY_USER, user);
             startActivity(intent);
@@ -180,10 +195,10 @@ public class ProfileFragment extends Fragment {
         });
 
         //back
-        binding.imageBack.setOnClickListener(v-> {
-            getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();}
+     //   binding.imageBack.setOnClickListener(v-> {
+      //      getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();}
 
-        );
+       // );
 
 
         // hiding and showing information

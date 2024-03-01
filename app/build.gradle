@@ -77,6 +77,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
     implementation 'pl.charmas.android:android-reactive-location:0.10@aar'
+    implementation 'com.google.firebase:firebase-messaging-directboot:20.2.0'
+
 
    // implementation 'pl.charmas.android:android-reactive-location2:2.1@aar'
   //  implementation 'com.google.android.gms:play-services-location:11.0.4' //you can use newer GMS version if you need

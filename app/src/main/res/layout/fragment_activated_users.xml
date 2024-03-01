@@ -7,17 +7,21 @@
     tools:context=".activities.fragments.ActivatedUsersFragment">
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_back"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/ic_settings"
         android:layout_below="@id/refresh"
-        android:layout_alignLeft="@id/refresh"
+        android:background="@drawable/rect_background"
+        android:layout_alignTop="@id/refresh"
+        android:layout_toLeftOf="@id/refresh"
+        android:layout_marginRight="@dimen/_10sdp"
         />
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:src="@drawable/ic_refresh"
+        android:background="@drawable/rect_background"
         android:layout_alignParentRight="true"
         />
     <androidx.recyclerview.widget.RecyclerView

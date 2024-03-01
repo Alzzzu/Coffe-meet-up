@@ -43,6 +43,8 @@ import my.first.messenger.databinding.ActivityEditProfileBinding;
 public class EditProfileActivity extends AppCompatActivity {
     private ActivityEditProfileBinding binding;
     private String encodedImage;
+    private Boolean isPictureUpdate = false;
+
     private User user;
     private Uri uri=null;
     private StorageReference storageReference;
@@ -56,7 +58,7 @@ public class EditProfileActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         init();
         loadUserInfo();
-        setListener();
+        setListeners();
     }
     private void init(){
         user = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
@@ -68,13 +70,6 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.name.setText(user.name);
         binding.hobby.setText(user.hobby);
         binding.about.setText(user.about);
-       // BitmapFactory.Options options = new BitmapFactory.Options();
-       // options.inScaled = false;
-       // options.inDither = false;
-     //   options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-   //    byte[] bytes = Base64.decode(user.image, Base64.DEFAULT);
-     //   Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0 ,bytes.length, options);
-       // binding.profilePicture.setImageBitmap(bitmap);
         storageReference.child("images/"+user.id+"/0").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -89,7 +84,7 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         });
     }
-    private void setListener(){
+    private void setListeners(){
         binding.profilePicture.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
@@ -97,12 +92,13 @@ public class EditProfileActivity extends AppCompatActivity {
         });
         binding.done.setOnClickListener(v -> {
             if (isValidFilling()){
+                binding.done.setOnClickListener(null);
                 updateUserInfo();
                 //if(updateUserInfo()){
-                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
-                intent.putExtra(Constants.KEY_USER, user);
-                startActivity(intent);
-                finish();
+      //          Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
+       //         intent.putExtra(Constants.KEY_USER, user);
+       //         startActivity(intent);
+         //       finish();
                     //}
             }
         });
@@ -111,26 +107,24 @@ public class EditProfileActivity extends AppCompatActivity {
          if (!(uri==null)){
             uploadImageProfile(uri);
             user.image = encodedImage;
-            makeToast("here");
-        }
+            isPictureUpdate = true;
+         }
+
         user.name = binding.name.getText().toString();
         user.hobby = binding.hobby.getText().toString();
         user.about = binding.about.getText().toString();
         preferencesManager.putString(Constants.KEY_NAME, user.name);
         preferencesManager.putString(Constants.KEY_HOBBIES, user.hobby);
         preferencesManager.putString(Constants.KEY_ABOUT, user.about);
-  //      try {
-    //        makeToast(uri==null ? "true" : false + "");//user.name + user.hobby + user.about +user.image);
-    //    }
-     //   catch (Exception e){
-      //      makeToast(e.getMessage());
-       // }
         database = FirebaseFirestore.getInstance();
+
         database.collection(Constants.KEY_COLLECTION_USERS).document(user.id)
                 .update(Constants.KEY_NAME, user.name,
                         Constants.KEY_HOBBIES, user.hobby,
                         Constants.KEY_ABOUT, user.about,
                         Constants.KEY_IMAGE, user.image);
+        if(isPictureUpdate){
+
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).whereEqualTo(Constants.KEY_SENDER_ID, user.id).get()
                 .addOnCompleteListener(task -> {
                     for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
@@ -138,8 +132,15 @@ public class EditProfileActivity extends AppCompatActivity {
                                 .update(Constants.KEY_SENDER_IMAGE, user.image);
                     }
                 });
+        }
+        else{
+            Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
+            intent.putExtra(Constants.KEY_USER, user);
+            startActivity(intent);
+            finish();
 
-      //  return res;
+        }
+
     }
     private Boolean isValidFilling(){
         // if(encodedImage.equals(null)){
@@ -222,7 +223,7 @@ public class EditProfileActivity extends AppCompatActivity {
         ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                makeToast("uploaded!");
+                //     makeToast("uploaded!");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -235,6 +236,12 @@ public class EditProfileActivity extends AppCompatActivity {
                    binding.progress.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
                     binding.progress.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
             }
+        }).addOnCompleteListener(task -> {
+            Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
+            intent.putExtra(Constants.KEY_USER, user);
+            startActivity(intent);
+            finish();
+
         });
 
     }

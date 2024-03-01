@@ -15,6 +15,7 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -34,6 +35,7 @@ import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 
 public class MessagingService extends FirebaseMessagingService {
+    private static final String TAG = "FirebaseMessagingService";
     private PreferencesManager preferencesManager;
 
     @Override
@@ -44,11 +46,22 @@ public class MessagingService extends FirebaseMessagingService {
     }
 
     @Override
-    public void onMessageReceived(@NonNull RemoteMessage message) {
+    @WorkerThread
+    public void onMessageReceived( RemoteMessage message) {
         super.onMessageReceived(message);
+        showNotification(message.getData().get("message"));
         Log.d("FCM", "message: " + message.getNotification().getBody());
+        Log.d("babura", "a");
+
+
         User user = new User();
         user.id = message.getData().get(Constants.KEY_USER_ID);
+        if(user.id!=null){
+            Log.d("babura", user.id);
+        }
+        else{
+            Log.d("babura", "user.id");
+        }
         user.name = message.getData().get(Constants.KEY_NAME);
         user.token = message.getData().get(Constants.KEY_FCM_TOKEN);
         showNotification(user.name, "aea");
@@ -83,18 +96,9 @@ public class MessagingService extends FirebaseMessagingService {
         }
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-   //         // TODO: Consider calling
-             // ActivityCompat#requestPermissions
-                    //here to request the missing permissions, and then overriding
-              // public void onRequestPermissionsResult(int requestCode, String[] permissions,
-             //                                         int[] grantResults)
-            //// to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
-
         notificationManagerCompat.notify(notificationId, builder.build());
-
 
     }
     void showNotification(String title, String message) {
@@ -133,5 +137,21 @@ public class MessagingService extends FirebaseMessagingService {
         mBuilder.setContentIntent(pir);
         mNotificationManager.notify(0, mBuilder.build());
     }
+    private void showNotification(String message) {
+        Intent i=new Intent(this,MainActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder=new NotificationCompat.Builder(this)
+                .setAutoCancel(true)
+                .setContentTitle("FCM TITLE").setContentText(message)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(0,builder.build());
+    }
+
 
 }

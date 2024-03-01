@@ -12,6 +12,7 @@ public class Constants {
     public static final String KEY_COLLECTION_CONVERSATIONS="conversations";
     public static final String KEY_COLLECTION_COFFEE_SHOPS="coffeeshops";
     public static final String KEY_COLLECTION_MEET_UP_OFFERS="meetUpOffers";
+    public static final String KEY_COLLECTION_VISITS="visits";
 
 
 
@@ -27,9 +28,14 @@ public class Constants {
     public static final String KEY_HOBBIES = "hobbies";
     public static final String KEY_ABOUT = "about";
     public static final String KEY_FCM_TOKEN = "fcmToken";
+
+
+
+    // statuses
     public static final String KEY_IS_SIGNED_IN = "is_signed_in";
     public static final String KEY_IS_GOING = "is_going";
     public static final String KEY_IS_ACTIVATED = "is_activated";
+    public static final String KEY_IS_VISITED = "is_visited";
 
     public static final String KEY_USER = "user";
 
@@ -110,6 +116,6 @@ public class Constants {
 
 
     //Numeric CONST
-    public static final int TIME_GAP=5000*60*5;
+    public static final int TIME_GAP=1000*60*5;
 
 }

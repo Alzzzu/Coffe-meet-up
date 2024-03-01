@@ -125,9 +125,8 @@ public class UsersFragment extends Fragment implements UsersListener {
                                             if(task2.isSuccessful()&&task2.getResult()!=null){
                                                 for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
                                                     if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
-                                                            &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
-                                                            && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferenceManager.getString(Constants.KEY_SEARCH_GENDER))) {
-
+                                                                   &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
+                                               && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferenceManager.getString(Constants.KEY_SEARCH_GENDER))) {
                                                         User user = new User();
                                                         user.id=queryDocumentSnapshot2.getString(Constants.KEY_USER_ID);
                                                         user.name=queryDocumentSnapshot2.getString(Constants.KEY_NAME);
@@ -137,17 +136,21 @@ public class UsersFragment extends Fragment implements UsersListener {
                                                     }
                                                 }
                                             }
+
                                             UserAdapter userAdapter = new UserAdapter(users, this);
                                             binding.usersRecycleView.setAdapter(userAdapter);
                                             binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                            binding.progress.setVisibility(View.GONE);
+                                            if (users.size()==0){
+                                                binding.noUsers.setVisibility(View.VISIBLE);
+                                            }
                                         });
                                 if (users.size()>0){
                                     UserAdapter userAdapter = new UserAdapter(users, this);
                                     binding.usersRecycleView.setAdapter(userAdapter);
                                     binding.usersRecycleView.setVisibility(View.VISIBLE);
-
-
                                 }
+
 
                             }
                         }
@@ -199,20 +202,21 @@ public class UsersFragment extends Fragment implements UsersListener {
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
         Bundle bundle = new Bundle();
-      //  FirebaseFirestore database = FirebaseFirestore.getInstance();
-      //  database.collection(Constants.KEY_USER).document(user.id).get()
-        //        .addOnCompleteListener(task->{
-          //          DocumentSnapshot documentSnapshot = task.getResult();
-           //         user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
-            //        user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
-             //       user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
-             //   });
+        FirebaseFirestore database = FirebaseFirestore.getInstance();
+        database.collection(Constants.KEY_COLLECTION_USERS).document(user.id).get()
+                .addOnCompleteListener(task->{
+                    DocumentSnapshot documentSnapshot = task.getResult();
+                    user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
+                    user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
+                    user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
+                    bundle.putSerializable(Constants.KEY_USER, user);
+                    bundle.putBoolean("visitor", true);
+                    ProfileFragment frag = new ProfileFragment();
+                    frag.setArguments(bundle);
+                    getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
 
-        bundle.putSerializable(Constants.KEY_USER, user);
-        bundle.putBoolean("visitor", true);
-        ProfileFragment frag = new ProfileFragment();
-        frag.setArguments(bundle);
-        getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
+                });
+
 
         // startActivity(intent);
     }
