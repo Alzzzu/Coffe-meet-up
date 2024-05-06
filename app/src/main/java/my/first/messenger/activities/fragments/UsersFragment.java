@@ -1,11 +1,11 @@
 package my.first.messenger.activities.fragments;
 
 import static java.lang.Double.parseDouble;
-import static java.lang.Long.parseLong;
-import static my.first.messenger.activities.main_activities.RouteActivity.distance;
+import static my.first.messenger.activities.utils.Functions.distance;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +17,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.lang.ref.Cleaner;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import my.first.messenger.R;
@@ -31,39 +29,20 @@ import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.FragmentUsersBinding;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link UsersFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class UsersFragment extends Fragment implements UsersListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private FragmentUsersBinding binding;
     private PreferencesManager preferenceManager;
-
-    // TODO: Rename and change types of parameters
-
+    private List<User> users;
+    private UserAdapter userAdapter;
+    private static final String TAG = "UsersFragmentLog";
     public UsersFragment() {
         // Required empty public constructor
     }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param //param1 Parameter 1.
-     * @param //param2 Parameter 2.
-     * @return A new instance of fragment UsersFragment.
-     */
     // TODO: Rename and change types and number of parameters
     public static UsersFragment newInstance(){
         UsersFragment fragment = new UsersFragment();
         Bundle args = new Bundle();
-    //    args.putString(ARG_PARAM1, param1);
-      //  args.putString(ARG_PARAM2, param2);
-      //  fragment.setArguments(args);
         return fragment;
     }
 
@@ -79,19 +58,21 @@ public class UsersFragment extends Fragment implements UsersListener {
                              Bundle savedInstanceState) {
         binding = FragmentUsersBinding.inflate(inflater, container, false);
         init();
-        //getUsers();
         getActiveUsers();
         setListeners();
-
-
-        //here data must be an instance of the class MarsDataProvider
         return binding.getRoot();
     }
     private void init(){
+        users = new ArrayList<>();
         preferenceManager = new PreferencesManager(getActivity());
+        userAdapter = new UserAdapter(users, this);
     }
     private void setListeners(){
-        binding.imageBack.setOnClickListener(v->{
+
+
+        binding.swipeRefreshLayout.setOnRefreshListener(this::getActiveUsers);
+
+          binding.imageBack.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
@@ -102,20 +83,24 @@ public class UsersFragment extends Fragment implements UsersListener {
     }
     private void getActiveUsers(){
         FirebaseFirestore database= FirebaseFirestore.getInstance();
+        users.clear();
+        userAdapter = new UserAdapter(users, this);
+        Log.d(TAG, "function started");
         database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
                 .whereEqualTo("activated", true)
                 .get()
                 .addOnCompleteListener(task->{
-                    makeToast("here");
 
-                    if(task.isSuccessful()&&task.getResult()!=null) {
-                        List<User> users = new ArrayList<>();
-
+                    if(task.isSuccessful()&&task.getResult()!=null&&task.getResult().size()!=0) {
+                        Log.d(TAG, "first listener completed");
+                        int coffeeShopCounter = 0;
 
                         for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                             double lat = queryDocumentSnapshot.getDouble("latitude");
                             double lng = queryDocumentSnapshot.getDouble("longitude");
-                            if(2>distance(parseDouble(preferenceManager.getString(Constants.KEY_USER_LATITUDE)),parseDouble(preferenceManager.getString(Constants.KEY_USER_LONGITUDE)),lat, lng)){///getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLatitude(), getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)).getLongitude())) {
+                            Log.d(TAG, "second listener completed");
+                            if(1>distance(parseDouble(preferenceManager.getString(Constants.KEY_USER_LATITUDE)),parseDouble(preferenceManager.getString(Constants.KEY_USER_LONGITUDE)),lat, lng)){
+                                coffeeShopCounter +=1;
                                 database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
                                         .document(queryDocumentSnapshot.getId())
                                         .collection(Constants.KEY_COLLECTION_USERS)
@@ -123,6 +108,7 @@ public class UsersFragment extends Fragment implements UsersListener {
                                         .get()
                                         .addOnCompleteListener(task2 -> {
                                             if(task2.isSuccessful()&&task2.getResult()!=null){
+
                                                 for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
                                                     if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
                                                                    &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
@@ -133,33 +119,64 @@ public class UsersFragment extends Fragment implements UsersListener {
                                                         user.image=queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
                                                         user.age=queryDocumentSnapshot2.getLong(Constants.KEY_AGE).toString();
                                                         users.add(user);
+                                                        userAdapter.notifyDataSetChanged();
+
                                                     }
                                                 }
-                                            }
-
-                                            UserAdapter userAdapter = new UserAdapter(users, this);
-                                            binding.usersRecycleView.setAdapter(userAdapter);
-                                            binding.usersRecycleView.setVisibility(View.VISIBLE);
-                                            binding.progress.setVisibility(View.GONE);
-                                            if (users.size()==0){
-                                                binding.noUsers.setVisibility(View.VISIBLE);
+                                                if (users.size()>0) {
+                                                    userAdapter = new UserAdapter(users, this);
+                                                    binding.usersRecycleView.setAdapter(userAdapter);
+                                                    binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                                    binding.swipeRefreshLayout.setRefreshing(false);
+                                                    binding.progress.setVisibility(View.GONE);
+                                                    binding.loading.setVisibility(View.GONE);
+                                                    binding.noUsers.setVisibility(View.GONE);
+                                                }
+                                                else{
+                                                    binding.noUsers.setVisibility(View.VISIBLE);
+                                                    binding.progress.setVisibility(View.GONE);
+                                                    binding.swipeRefreshLayout.setRefreshing(false);
+                                                    binding.loading.setText("Пользователи по запросу не найдены");
+                                                }
                                             }
                                         });
-                                if (users.size()>0){
+                            }
+                        }
+                        if (coffeeShopCounter==0){
+                            binding.noUsers.setVisibility(View.VISIBLE);
+                            binding.progress.setVisibility(View.GONE);
+                            binding.swipeRefreshLayout.setRefreshing(false);
+                            binding.loading.setText("Пользователи по запросу не найдены");
+                        }
+                        /**
+
+                         * if (users.size()>0) {
                                     UserAdapter userAdapter = new UserAdapter(users, this);
                                     binding.usersRecycleView.setAdapter(userAdapter);
                                     binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                    binding.swipeRefreshLayout.setRefreshing(false);
+                                    binding.progress.setVisibility(View.GONE);
+                                    binding.loading.setVisibility(View.GONE);
                                 }
 
+                                    else{
+                                        binding.noUsers.setVisibility(View.VISIBLE);
+                                        binding.progress.setVisibility(View.GONE);
+                                    }
+**/
+                    }
+                    else{
+                        Log.d(TAG, "no result");
+                        binding.noUsers.setVisibility(View.VISIBLE);
+                        binding.progress.setVisibility(View.GONE);
+                        binding.swipeRefreshLayout.setRefreshing(false);
+                        binding.loading.setText("Пользователи по запросу не найдены");
 
-                            }
-                        }
-                    }});
+                    }
+                });
 
     }
     private void getUsers(){
-       // makeToast(preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+"");
-       // makeToast(preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)+"");
 
         FirebaseFirestore database= FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USERS)
@@ -194,6 +211,12 @@ public class UsersFragment extends Fragment implements UsersListener {
                             makeToast("no users found");
                         }
                     }
+                })
+                .addOnFailureListener(task->{
+                    binding.progress.setVisibility(View.GONE);
+                    binding.loading.setVisibility(View.GONE);
+                    binding.noUsers.setVisibility(View.VISIBLE);
+
                 });
 
     }
@@ -213,7 +236,9 @@ public class UsersFragment extends Fragment implements UsersListener {
                     bundle.putBoolean("visitor", true);
                     ProfileFragment frag = new ProfileFragment();
                     frag.setArguments(bundle);
-                    getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                            .add(R.id.fragment_container_view, frag).commit();
 
                 });
 

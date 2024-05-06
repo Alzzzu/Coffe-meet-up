@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -45,9 +46,7 @@
         <activity
             android:name=".activities.main_activities.BaseActivity"
             android:exported="false" />
-        <activity
-            android:name=".activities.main_activities.MainActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activities.main_activities.MapActivity"
             android:exported="false"
@@ -95,22 +94,16 @@
 
         <service
             android:name=".activities.main_activities.MessagingService"
-            android:enabled="true"
+            android:enabled="false"
             android:permission="com.google.android.c2dm.permission.SEND"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-          </intent-filter>
+            </intent-filter>
         </service>
 
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_back" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/coffee" />
     </application>
 
 </manifest>

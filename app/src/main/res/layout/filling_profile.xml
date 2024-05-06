@@ -5,18 +5,31 @@
         tools:context=".activities.main_activities.FillingUserInfo"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/black">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/name"
+            android:background="@color/coffee"
+            android:fontFamily="@font/num3"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_23ssp"
+            android:layout_alignParentTop="true"/>
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/pic" />
+            android:src="@drawable/pic"
+            android:layout_below="@id/title"/>
 
         <LinearLayout
+            android:id="@+id/background"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -29,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="@dimen/_20sdp">
+                android:layout_marginTop="@dimen/_10sdp">
 
                 <com.makeramen.roundedimageview.RoundedImageView
                     android:id="@+id/profilePicture"
@@ -58,7 +71,9 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/user_name"
                 android:textColorHint="@color/light_grey"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:textSize="@dimen/_15ssp"
+                />
 
             <RadioGroup
                 android:id="@+id/gender"
@@ -70,6 +85,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/male"
+                    android:textSize="@dimen/_15ssp"
                     android:textColor="@color/light_grey"/>
 
 
@@ -78,6 +94,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/female"
+                    android:textSize="@dimen/_15ssp"
+
                     android:textColor="@color/light_grey" />
             </RadioGroup>
 
@@ -88,23 +106,26 @@
                 android:hint="@string/user_age"
                 android:inputType="number"
                 android:textColor="@color/white"
-                android:textColorHint="@color/light_grey" />
-
-            <EditText
-                android:id="@+id/about"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/user_hobbies"
                 android:textColorHint="@color/light_grey"
-                android:textColor="@color/white"/>
+                android:textSize="@dimen/_15ssp" />
 
             <EditText
                 android:id="@+id/hobby"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:hint="@string/user_hobbies"
+                android:textColorHint="@color/light_grey"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_15ssp" />
+
+            <EditText
+                android:id="@+id/about"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
                 android:hint="@string/user_about"
                 android:textColorHint="@color/light_grey"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:textSize="@dimen/_15ssp"/>
 
             <Button
                 android:id="@+id/button"
@@ -113,20 +134,11 @@
                 android:layout_gravity="center"
                 android:text="@string/cont"
                 android:fontFamily="@font/russ"
-                android:textSize="@dimen/_20ssp"
+                android:textSize="@dimen/_25ssp"
                 android:tint="#66FF0000"
                 android:alpha="0.8"
                 android:background="?android:attr/selectableItemBackground"/>
 
         </LinearLayout>
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="50dp"
-                android:text="@string/name"
-                android:background="@color/coffee"
-                android:fontFamily="@font/num3"
-                android:gravity="center"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_23ssp" />
         </RelativeLayout>
 </ScrollView>

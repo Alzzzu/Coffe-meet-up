@@ -1,28 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="@color/white"
+    android:background="@drawable/for_profile"
+    android:alpha="0.8"
     android:orientation="vertical"
     tools:context=".activities.fragments.CoffeeshopFragment">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/white"
-        android:background="@drawable/for_profile"
-        android:alpha="0.8"
-        android:orientation="vertical">
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imageBack"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="@dimen/_40sdp"
         android:padding="@dimen/_6sdp"
-        android:src="@drawable/ic_back"/>
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/_100sdp"
-        android:src="@drawable/logo"
-        />
+        android:tint="@color/caramel"
+        android:src="@drawable/ic_cancel"/>
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
@@ -30,8 +25,10 @@
         android:text="Название"
         android:layout_gravity="center"
         android:gravity="center"
+        android:layout_centerHorizontal="true"
         android:fontFamily="@font/russ3"
-        android:textSize="@dimen/_20ssp"/>
+        android:textSize="@dimen/_20ssp"
+        android:layout_marginTop="@dimen/_15sdp"/>
     <TextView
         android:id="@+id/address"
         android:layout_width="wrap_content"
@@ -40,14 +37,17 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:fontFamily="@font/russ3"
-        android:textSize="@dimen/_20ssp"/>
+        android:textSize="@dimen/_20ssp"
+        android:layout_below="@id/name"
+        android:layout_centerHorizontal="true"/>
     <Button
         android:id="@+id/route"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Проложить маршрут"
         android:layout_gravity="center"
-        android:backgroundTint="@color/whipped_cream"/>
-    </LinearLayout>
-
-</LinearLayout>
+        android:backgroundTint="@color/whipped_cream"
+        android:layout_marginBottom="@dimen/_15sdp"
+        android:layout_below="@id/address"
+        android:layout_centerHorizontal="true"/>
+    </RelativeLayout>

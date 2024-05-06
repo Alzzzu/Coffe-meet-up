@@ -1,31 +1,17 @@
 package my.first.messenger.activities.main_activities;
 
 import static java.lang.Double.parseDouble;
-
-
-import static my.first.messenger.activities.fragments.MapFragment.distance;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import static my.first.messenger.activities.utils.Functions.distance;
 
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.ConditionVariable;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -33,6 +19,12 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -61,21 +53,13 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import my.first.messenger.R;
 import my.first.messenger.activities.fragments.AlertFragment;
-import my.first.messenger.activities.fragments.SelectFragment;
 import my.first.messenger.activities.models.User;
-import my.first.messenger.activities.services.GPSTracker;
-import my.first.messenger.activities.services.TimerService;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.ActivityRouteBinding;
-import my.first.messenger.databinding.FragmentRouteBinding;
 
 public class RouteActivity extends AppCompatActivity {
     private static ActivityRouteBinding binding;
@@ -100,18 +84,10 @@ public class RouteActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         Log.d(TAG, "strivt avtivated");
-
         binding = ActivityRouteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        //Service
-        Intent intent = new Intent(this, TimerService.class);
-
-//        startService(intent);
-
         // Classes
         preferencesManager = new PreferencesManager(getApplicationContext());
-
         init();
         Log.d(TAG, "initialized");
         locationUpdates();
@@ -119,10 +95,13 @@ public class RouteActivity extends AppCompatActivity {
         Log.d(TAG, "map set");
 
         setListeners();
+
     }
 
     private void init() {
         id = preferencesManager.getString(Constants.KEY_COFFEESHOP_ID);
+        Log.d(TAG, preferencesManager.getString(Constants.KEY_USER_ID));
+        database = FirebaseFirestore.getInstance();
         userLoc = new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE)));
         if(!preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")) {
             database.collection(Constants.KEY_COLLECTION_VISITS)
@@ -167,7 +146,7 @@ public class RouteActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
         mapController.setZoom(15);
-        map.setBuiltInZoomControls(true);
+        map.setBuiltInZoomControls(false);
         map.setMultiTouchControls(true);
         mapController.setCenter(userLoc);//new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx);
@@ -189,8 +168,11 @@ public class RouteActivity extends AppCompatActivity {
                         map.getOverlays().add(marker);
                         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                         map.getOverlays().add(marker);
-                        marker.setIcon(getResources().getDrawable(R.mipmap.coffee_colour));
-                        marker.setTitle("here");
+                        marker.setIcon(getResources().getDrawable(R.mipmap.map_icon_2));
+                        marker.setTitle(task.getResult().getString(Constants.KEY_ADDRESS));
+
+                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LONGITUDE, lng+"");
+                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LATITUDE, lat+"");
                         try{
                         routing(lat, lng);
                         }
@@ -206,28 +188,16 @@ public class RouteActivity extends AppCompatActivity {
 
     private void setListeners() {
         binding.cancel.setOnClickListener(v -> {
+            AlertFragment frag = new AlertFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("type", "CANCEL");
+            bundle.putString("id", id);
+            frag.setArguments(bundle);
+            FragmentManager manager = getSupportFragmentManager();
+            frag.show(manager, "dialog");
 
-            preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                    .update("activated", false);
-
-            db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                    .collection(Constants.KEY_COLLECTION_USERS)
-                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
-            db.collection(Constants.KEY_COLLECTION_VISITS)
-                    .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                    .get()
-                    .addOnCompleteListener(task->{
-                        for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                            db.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
-                        }
-                    });
-
-            Intent i = new Intent(getApplicationContext(), MapActivity.class);
-            startActivity(i);
+            if (0>1){
+            }
 
         });
 
@@ -235,20 +205,11 @@ public class RouteActivity extends AppCompatActivity {
             // AlertFragment alert = new AlertFragment();
             Log.d(TAG,"starting check");
             if (distance(coffeeshopLoc.getLatitude(), coffeeshopLoc.getLongitude(), parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))) < 0.2) {
-               // FragmentManager manager = getSupportFragmentManager();
-                //    alert.show(manager, "dialog");
                 if(preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                        .collection(Constants.KEY_COLLECTION_USERS)
-                        .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
-                preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
                 preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                 Intent i = new Intent(getApplicationContext(), ActivatedActivity.class);
                 startActivity(i);
                 finish();
-                } else{
-                    makeToast(preferencesManager.getString(Constants.KEY_VISITED_ID));
                 }
             } else {
                 makeToast("Чтобы завершить путь необходимо достигнуть точку");
@@ -283,8 +244,6 @@ public class RouteActivity extends AppCompatActivity {
                 }
             }
         });
-        Log.d(TAG,"ROUTE");
-
     }
 
 
@@ -297,44 +256,43 @@ public class RouteActivity extends AppCompatActivity {
                         Log.d(TAG,"ROUTE STARTED");
 
                         //  GeoPoint g = new GeoPoint(new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
-                        RoadManager roadManager = new OSRMRoadManager(getApplicationContext(), "coffeeshopperhere");
-                        Log.d(TAG,"ROUTE STARTED1");
+                        try {
+                            RoadManager roadManager = new OSRMRoadManager(getApplicationContext(), "coffeeshopperhere");
+                            if (roadManager == null) {
+                                Log.e(TAG, "null");
+                            } else {
+                                Log.d(TAG, "ROUTE STARTED1");
 
-                        ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
-                        waypoints.add(userLoc);
-                        waypoints.add(new GeoPoint(lat, lng));
-                        ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT);
-                        Log.d(TAG,"ROUTE STARTED2");
+                                ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
+                                waypoints.add(userLoc);
+                                waypoints.add(new GeoPoint(lat, lng));
+                                ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT);
+                                Log.d(TAG, "ROUTE STARTED2");
 
 
-                        Road road = roadManager.getRoad(waypoints);
-                        Log.d(TAG,"ROUTE STARTED3");
+                                Road road = roadManager.getRoad(waypoints);
+                                Log.d(TAG, "ROUTE STARTED3");
 
-                        Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
-                        map.getOverlays().add(roadOverlay);
-                        binding.progress.setVisibility(View.GONE);
-                        binding.map.setVisibility(View.VISIBLE);
+                                Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
+                                roadOverlay.setColor(Color.rgb(157, 92, 52));
+                                map.getOverlays().add(roadOverlay);
+                                binding.progress.setVisibility(View.GONE);
+                                binding.loading.setVisibility(View.GONE);
+                                binding.cancel.setVisibility(View.VISIBLE);
+                                binding.map.setVisibility(View.VISIBLE);
+                            }
+                        }
+                        catch(Exception e){
+                            Log.d(TAG, e.getMessage());
+
+                        }
+
                     }
                 });
             }
         }.start();
     }
 
-
-    public static double distance(double lat1, double lon1, double lat2, double lon2) {
-        if ((lat1 == lat2) && (lon1 == lon2)) {
-            return 0;
-        } else {
-            double theta = lon1 - lon2;
-            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
-            dist = Math.acos(dist);
-            dist = Math.toDegrees(dist);
-            dist = dist * 60 * 1.1515;
-            dist = dist * 1.609344;
-
-            return (dist);
-        }
-    }
 
 
     private void makeToast(String message) {
@@ -357,64 +315,26 @@ public class RouteActivity extends AppCompatActivity {
             mNotificationManager.createNotificationChannel(channel);
         }
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), "YOUR_CHANNEL_ID")
-                .setSmallIcon(R.drawable.logo) // notification icon
-                .setContentTitle(title) // title for notification
-                .setContentText(message)// message for notification
-                .setAutoCancel(true); // clear notification after click
+                .setSmallIcon(R.drawable.logo)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true);
         Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(pi);
-        mNotificationManager.notify(0, mBuilder.build());
+        //PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //mBuilder.setContentIntent(pi);
+       // mNotificationManager.notify(0, mBuilder.build());
     }
 
-    private void getLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            mFusedLocationClient.getLastLocation().addOnCompleteListener(task -> {
-                Location location = task.getResult();
-                preferencesManager.putString(Constants.KEY_USER_LONGITUDE, location.getLongitude() + "");
-                preferencesManager.putString(Constants.KEY_USER_LATITUDE, location.getLatitude() + "");
-            });
-        }
-    }
 
-    private void check_distance(LocationCallback locationCallback){
-        if (distance(coffeeshopLoc.getLatitude(), coffeeshopLoc.getLongitude(), parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))) < 0.2) {
-            if (preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")) {
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                        .collection(Constants.KEY_COLLECTION_USERS)
-                        .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
-                preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
-                preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                Intent i = new Intent(getApplicationContext(), ActivatedActivity.class);
-                startActivity(i);
-                finish();
-            }
-            else{
-                preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                preferencesManager.putString(Constants.KEY_VISITED_ID, "");
-                preferencesManager.putString(Constants.KEY_COFFEESHOP_ID, "");
-                preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
-                showNotification("Вы достигли точку!", "время пить кофе!");
-                Intent i = new Intent(getApplicationContext(), MapActivity.class);
-                startActivity(i);
-                finish();
-            }
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        }
-    }
 
   public void locationUpdates(){
         try{
-
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
         }
-
         locationRequest = locationRequest.create();
         locationRequest.setInterval(100);
         locationRequest.setFastestInterval(50);
@@ -429,6 +349,51 @@ public class RouteActivity extends AppCompatActivity {
                         HashMap<String, Object> updt = new HashMap<>();
                         updt.put("latitude", location.getLatitude());
                         updt.put("longitude", location.getLongitude());
+                        if (0.05>distance(location.getLatitude(), location.getLongitude(),
+                                parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LATITUDE)),
+                                parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE))))
+                        {
+                            if (preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
+                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                    .collection(Constants.KEY_COLLECTION_USERS)
+                                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
+
+                            preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
+                            preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                            fusedLocationProviderClient.removeLocationUpdates(this);
+                            startActivity( new Intent(getApplicationContext(), ActivatedActivity.class));
+                            finish();
+                            }
+                            else {
+                                showNotification("Поздравляем!", "Вы достигли точки, удачного кофепития)");
+                                preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                                preferencesManager.putString(Constants.KEY_VISITED_ID,"");
+                                preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
+
+                                FirebaseFirestore database = FirebaseFirestore.getInstance();
+
+                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                        .update("activated", false);
+
+                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                        .collection(Constants.KEY_COLLECTION_USERS)
+                                        .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+                                database.collection(Constants.KEY_COLLECTION_VISITS)
+                                        .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                                        .get()
+                                        .addOnCompleteListener(task->{
+                                            for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                                                database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
+                                            }
+                                        });
+                                fusedLocationProviderClient.removeLocationUpdates(this);
+
+
+                                Intent i = new Intent(getApplicationContext(), MapActivity.class);
+                                startActivity(i);
+
+                            }
+                        }
 
                         preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
                         preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
@@ -436,14 +401,7 @@ public class RouteActivity extends AppCompatActivity {
                         FirebaseFirestore database = FirebaseFirestore.getInstance();
 
                         if(!preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
-                            database.collection(Constants.KEY_COLLECTION_VISITS)
-                                    .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                                    .get()
-                                    .addOnCompleteListener(task -> {
-                                        for(QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
-                                            database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).update(updt);
-                                        }
-                                    });
+                           // deleteVisits(database, preferencesManager);
                         }
                         else{
                             database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
@@ -470,11 +428,11 @@ public class RouteActivity extends AppCompatActivity {
                     startActivity(i);
 
                 }
-            }
+                }
+
         };
 
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-
         }
         catch (Exception e){
             makeToast(e.getMessage());

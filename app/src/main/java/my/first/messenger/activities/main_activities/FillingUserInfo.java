@@ -2,27 +2,25 @@ package my.first.messenger.activities.main_activities;
 
 import static java.lang.Integer.parseInt;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Base64;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Base64;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -38,13 +36,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.UUID;
 
 import my.first.messenger.R;
-import my.first.messenger.activities.models.Image;
 import my.first.messenger.activities.models.User;
-import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.activities.utils.Constants;
+import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.FillingProfileBinding;
 
 public class FillingUserInfo extends AppCompatActivity {
@@ -93,9 +89,6 @@ public class FillingUserInfo extends AppCompatActivity {
             }
         });
         layoutImage.setOnClickListener(v -> {
-            //    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media. EXTERNAL_CONTENT_URI);
-             //   intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-              //  pickImage.launch(intent);
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 activityResultLauncher.launch(intent);
@@ -128,13 +121,8 @@ public class FillingUserInfo extends AppCompatActivity {
                                     user.name =binding.name.getText().toString();
                                     user.image=encodedImage;
                                     user.age = binding.age.getText().toString();
-                                    makeToast(url+"  ");
+                                    makeToast(url+user.age);
                                     uploadImage(url,"0", documentReference.getId());
-                                    Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                                    intent.putExtra(Constants.KEY_USER, user);
-                                    finish();
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                   startActivity(intent);
                                 })
                .addOnFailureListener(exception -> {
                                     Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
@@ -239,9 +227,6 @@ public class FillingUserInfo extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    // galleryImages.add(image);
-               ///     uploadImage(result.getData().getData(), );//imageAdapter.getItemCount()+"");
-
                 }
             } else {
                 Toast.makeText(FillingUserInfo.this, "Please select an image", Toast.LENGTH_SHORT).show();
@@ -254,6 +239,11 @@ public class FillingUserInfo extends AppCompatActivity {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 makeToast("uploaded!");
+                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                intent.putExtra(Constants.KEY_USER, user);
+                finish();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -263,8 +253,6 @@ public class FillingUserInfo extends AppCompatActivity {
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                // binding.progress.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
-                //binding.progress.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
             }
         });
     }

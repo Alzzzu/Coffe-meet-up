@@ -1,24 +1,34 @@
 package my.first.messenger.activities.main_activities;
 
 import static java.lang.Double.parseDouble;
-import static my.first.messenger.activities.fragments.MapFragment.distance;
+import static my.first.messenger.activities.utils.Functions.deleteVisits;
+import static my.first.messenger.activities.utils.Functions.distance;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
@@ -41,9 +51,11 @@ public class VisitedActivity extends AppCompatActivity {
     private ActivityVisitedBinding binding;
     private FirebaseFirestore database;
     private PreferencesManager preferencesManager;
-    private final String TAG= "SHITTER";
+    private final String TAG= "VisitedActivityTAG";
     private StorageReference storageReference;
     private Query query;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +64,11 @@ public class VisitedActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         Log.d(TAG,"LOADED 1");
 
-
         init();
         loadUsersDetail();
         setListeners();
         locationUpdate();
+        locationUpdates();
     }
     private void init(){
 
@@ -67,6 +79,7 @@ public class VisitedActivity extends AppCompatActivity {
         query = database.collection(Constants.KEY_COLLECTION_VISITS)
                 .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_VISITOR_ID))
                 .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
     }
     private void locationUpdate(){
             query.addSnapshotListener(eventListener);
@@ -98,19 +111,10 @@ public class VisitedActivity extends AppCompatActivity {
             preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
             preferencesManager.putString(Constants.KEY_COFFEESHOP_ID,"");
 
-            database.collection(Constants.KEY_COLLECTION_VISITS)
-                    .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                    .get()
-                    .addOnCompleteListener(task->{
-
-                        for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                            database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
-                        }
-
-                        Intent intent = new Intent(getApplicationContext(), MapActivity.class);
-                        startActivity(intent);
-                    });
-                });
+            deleteVisits(database, preferencesManager);
+            Intent intent = new Intent(getApplicationContext(), MapActivity.class);
+            startActivity(intent);
+        });
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -128,6 +132,8 @@ public class VisitedActivity extends AppCompatActivity {
                     intent.putExtra(Constants.KEY_USER, user);
                     startActivity(intent);
                     overridePendingTransition(0,0);
+                    finish();
+
                     return true;
                 }
 
@@ -184,10 +190,11 @@ public class VisitedActivity extends AppCompatActivity {
                     preferencesManager.putString(Constants.KEY_VISITED_ID,"");
                     preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
 
-                    showNotification("Вас забулили!",documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME)+ " отменил(а) встречу");
+               //     showNotification("Вас забулили!",documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME)+ " отменил(а) встречу");
 
                     Intent intent = new Intent(getApplicationContext(), MapActivity.class);
                     startActivity(intent);
+                    finish();
 
                 }
             }
@@ -216,4 +223,60 @@ public class VisitedActivity extends AppCompatActivity {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
+    public void locationUpdates() {
+        try {
+
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(VisitedActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(VisitedActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+            }
+
+            locationRequest = locationRequest.create();
+            locationRequest.setInterval(100);
+            locationRequest.setFastestInterval(50);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            LocationCallback locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+
+                    if (locationResult != null) {
+                        for (Location location : locationResult.getLocations()) {
+                            if (0.1 < distance(location.getLatitude(), location.getLongitude(), parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE)))) {
+                                preferencesManager.putBoolean(Constants.KEY_IS_VISITED, false);
+                                preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
+                                preferencesManager.putString(Constants.KEY_COFFEESHOP_ID,"");
+
+                                database.collection(Constants.KEY_COLLECTION_VISITS)
+                                        .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                                        .get()
+                                        .addOnCompleteListener(task->{
+
+                                            for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                                                database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
+                                            }
+
+                                            Intent intent = new Intent(getApplicationContext(), MapActivity.class);
+                                            startActivity(intent);
+                                            finish();
+
+                                        });
+                                    }
+
+                            else{
+                                Log.d(TAG, location.toString());
+                            }
+                        }
+                    }}}
+                    ;
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+
+        }
+
+}
 }

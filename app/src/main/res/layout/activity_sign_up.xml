@@ -17,19 +17,20 @@
     android:gravity="top|center"
     android:orientation="vertical">
     <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:background="@color/coffee"
-        android:fontFamily="@font/num3"
-        android:gravity="center"
+        android:id="@+id/title"
         android:text="@string/name"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_38sdp"
+        android:textSize="@dimen/_23ssp"
+        android:background="@color/coffee"
         android:textColor="@color/white"
-        android:textSize="30sp" />
+        android:gravity="center"
+        android:fontFamily="@font/num3"/>
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:fontFamily="@font/russ"
         android:textColor="@color/white"
         android:gravity="center"
@@ -45,6 +46,7 @@
         android:background="@drawable/rectangle_background"
         android:layout_marginLeft="@dimen/_25sdp"
         android:layout_marginRight="@dimen/_25sdp"
+        android:layout_marginTop="@dimen/_15sdp"
         android:tint="#66FF0000"
         android:alpha="0.75">
     <EditText
@@ -90,7 +92,7 @@
         android:fontFamily="@font/russ"
         android:layout_marginTop="@dimen/_5sdp"
         android:text="@string/cont"
-
+        android:background="?android:attr/selectableItemBackground"
         android:textSize="@dimen/_20ssp"
         android:alpha="0.8"/>
 

@@ -1,6 +1,13 @@
 package my.first.messenger.activities.main_activities;
 
-import static java.lang.Integer.parseInt;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Base64;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -8,15 +15,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Base64;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,10 +29,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.UUID;
 
-import my.first.messenger.R;
-import my.first.messenger.activities.models.Image;
 import my.first.messenger.activities.models.User;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
@@ -75,7 +70,7 @@ public class EditProfileActivity extends AppCompatActivity {
             public void onSuccess(Uri uri) {
                 Glide.with(getApplicationContext()).load(uri).into(binding.profilePicture);
                 Glide.with(getApplicationContext()).load(uri).into(binding.galleryImage);
-
+                binding.progressProfileImage.setVisibility(View.GONE);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -116,6 +111,7 @@ public class EditProfileActivity extends AppCompatActivity {
         preferencesManager.putString(Constants.KEY_NAME, user.name);
         preferencesManager.putString(Constants.KEY_HOBBIES, user.hobby);
         preferencesManager.putString(Constants.KEY_ABOUT, user.about);
+        preferencesManager.putString(Constants.KEY_IMAGE, user.image);
         database = FirebaseFirestore.getInstance();
 
         database.collection(Constants.KEY_COLLECTION_USERS).document(user.id)
@@ -132,6 +128,14 @@ public class EditProfileActivity extends AppCompatActivity {
                                 .update(Constants.KEY_SENDER_IMAGE, user.image);
                     }
                 });
+
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).whereEqualTo(Constants.KEY_RECEIVER_ID, user.id).get()
+                    .addOnCompleteListener(task -> {
+                        for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(queryDocumentSnapshot.getId())
+                                    .update(Constants.KEY_RECEIVER_IMAGE, user.image);
+                        }
+                    });
         }
         else{
             Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );

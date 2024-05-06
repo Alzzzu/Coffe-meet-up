@@ -1,5 +1,7 @@
 package my.first.messenger.activities.main_activities;
 
+import static my.first.messenger.activities.utils.Functions.deleteActivation;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,9 +13,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -47,6 +47,7 @@ import retrofit2.Response;
 
 public class ChatActivity extends BaseActivity implements ChatMessageListener {
     private ActivityChatBinding binding;
+
     private User receiverUser;
     private List<ChatMessage> chatMessages;
     private ChatAdapter chatAdapter;
@@ -54,6 +55,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
+    private Boolean isAdded = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,7 +149,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
 
     }
     private void sendMessage(){
-        if(binding.inputMessage.getText().toString()!=null) {
+        if(!("").equals(binding.inputMessage.getText().toString())) {
+            makeToast(preferencesManager.getString(Constants.KEY_COLLECTION_CHAT));
             HashMap<String, Object> message = new HashMap<>();
             message.put("type", "message");
             message.put(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID));
@@ -195,14 +198,17 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
 
 
     private void listenMessages(){
-         database.collection(Constants.KEY_COLLECTION_CHAT)
-        .whereEqualTo(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-        .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
-        .addSnapshotListener(eventListener);
         database.collection(Constants.KEY_COLLECTION_CHAT)
-                .whereEqualTo(Constants.KEY_SENDER_ID, receiverUser.id)
-                .whereEqualTo(Constants.KEY_RECEIVER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .addSnapshotListener(eventListener);
+                            .whereEqualTo(Constants.KEY_SENDER_ID, receiverUser.id)
+                            .whereEqualTo(Constants.KEY_RECEIVER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                            .addSnapshotListener(eventListener);
+
+
+        database.collection(Constants.KEY_COLLECTION_CHAT)
+                            .whereEqualTo(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                            .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
+                            .addSnapshotListener(eventListener);
+
 
     }
 
@@ -222,16 +228,15 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     try{
                     if (documentChange.getDocument().getString("type").equals("message")){
                         Log.d("CHAT_ACT", "ADDED1");
-
                         ChatMessage chatMessage = new ChatMessage();
-                    chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                    chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-                    chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
-                    chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
-                    chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
-                    chatMessage.id =documentChange.getDocument().getId();
-                    chatMessage.type =documentChange.getDocument().getString("type");
-                    chatMessage.clicked = false;
+                        chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                        chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
+                        chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
+                        chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                        chatMessage.id =documentChange.getDocument().getId();
+                        chatMessage.type =documentChange.getDocument().getString("type");
+                        chatMessage.clicked = false;
                     chatMessages.add(chatMessage);
                         Log.d("CHAT_ACT", "EVENT1");
 
@@ -258,20 +263,20 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                         Log.d("CHAT_ACT", e.getMessage());
 
                     }
+                    isAdded = true;
                 }
                 if (documentChange.getType() == DocumentChange.Type.REMOVED){
                     Log.d("CHAT_ACT", "EVENT DE");
 
-                    int position=-1;
+                    int position;
                     for( ChatMessage message: chatMessages){
                         if (message.id.equals(documentChange.getDocument().getId())){
                             position = chatMessages.indexOf(message);
+                            chatMessages.remove(position);
+                            chatAdapter.notifyItemRemoved(position);
+
                             break;
                         }
-                    }
-                    if(position>-1){
-                    chatMessages.remove(position);
-                    chatAdapter.notifyItemRemoved(position);
                     }
                 }
                 if (documentChange.getType() == DocumentChange.Type.MODIFIED){
@@ -290,12 +295,10 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     for( ChatMessage message: chatMessages){
                         if (message.id.equals(documentChange.getDocument().getId())){
                             position = chatMessages.indexOf(message);
+                            chatMessages.set(position, chatMessage);
+                            chatAdapter.notifyItemChanged(position);
                             break;
                         }
-                    }
-                    if(position>-1){
-                        chatMessages.set(position, chatMessage);
-                        chatAdapter.notifyItemChanged(position);
                     }
 
                 }
@@ -317,9 +320,10 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                         chatMessages,
                         preferencesManager.getString(Constants.KEY_USER_ID), this
                 );
-                binding.chatRecycleView.setAdapter(chatAdapter);
-                binding.chatRecycleView.smoothScrollToPosition(chatMessages.size());
 
+                    binding.chatRecycleView.setAdapter(chatAdapter);
+                    binding.chatRecycleView.smoothScrollToPosition(chatMessages.size());
+                
             }
             binding.chatRecycleView.setVisibility(View.VISIBLE);
         }
@@ -404,11 +408,10 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
 
     //
     private void checkForConversation(){
-        //if(chatMessages.size()!=0){
         Log.d("CHAT_ACT", "CON EVENT");
 
         checkForConversationRemotely(
-                    preferencesManager.getString(Constants.KEY_USER_ID),//key sender id
+                    preferencesManager.getString(Constants.KEY_USER_ID),
                     receiverUser.id
             );
             checkForConversationRemotely(
@@ -506,14 +509,16 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 makeToast(receiverUser.id);
                 preferencesManager.putString(Constants.KEY_COFFEESHOP_ID, message.coffeeshopId);
                 deleteMessage(message, position);
-                deleteActivation();
+                FirebaseFirestore database = FirebaseFirestore.getInstance();
+                deleteActivation(database, preferencesManager);
+                addVisit();
                 Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
                 startActivity(intent);
 
             }
         }
     }
-    private void deleteActivation(){
+    private void addVisit(){
 
         HashMap<String, Object> updt = new HashMap<>();
         updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
@@ -521,25 +526,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         updt.put(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_VISITED_ID));
         updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
         updt.put(Constants.KEY_COFFEESHOP_ID, preferencesManager.getString(Constants.KEY_COFFEESHOP_ID));
-
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-                .collection(Constants.KEY_COLLECTION_USERS)
-                .document(receiverUser.id)//Constants.KEY_VISITED_ID))
-                .delete();
-        Log.d("CHAT_ACT","deleting meet ups");
-        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
-                .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                //.where(Filter.or(
-               // Filter.equalTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_VISITED_ID)),
-                //Filter.equalTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))))
-                .get()
-                .addOnCompleteListener(task->{
-                    for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).document(queryDocumentSnapshot.getId()).delete();
-                    }
-                });
         database.collection(Constants.KEY_COLLECTION_VISITS)
                 .add(updt);
     }

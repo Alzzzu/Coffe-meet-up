@@ -1,13 +1,16 @@
 package my.first.messenger.activities.main_activities;
 
-import android.content.Intent;
+import static my.first.messenger.activities.utils.Functions.deleteActivation;
+import static my.first.messenger.activities.utils.Functions.deleteVisits;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -31,9 +34,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,16 +46,15 @@ import my.first.messenger.activities.adapters.ImageAdapter;
 import my.first.messenger.activities.listeners.ImageGalleryListener;
 import my.first.messenger.activities.models.Image;
 import my.first.messenger.activities.models.User;
-import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.activities.utils.Constants;
+import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.ActivityProfileBinding;
 
     public class ProfileActivity extends BaseActivity implements ImageGalleryListener {
     private ActivityProfileBinding binding;
-    // private TextView name, age, hobby, about;
     private PreferencesManager preferencesManager;
     StorageReference storageReference;
-
+    private FirebaseFirestore database;
     private User user;
     private ArrayList<Image> galleryImages;
     private ImageAdapter imageAdapter;
@@ -62,18 +62,13 @@ import my.first.messenger.databinding.ActivityProfileBinding;
     private Boolean clicked;
     private Image image;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         init();
         loadUsersDetails();
         loadUserGallery();
@@ -83,14 +78,13 @@ import my.first.messenger.databinding.ActivityProfileBinding;
     private void init(){
         preferencesManager = new PreferencesManager(getApplicationContext());
         binding.bottomNavigation.setSelectedItemId(R.id.profile);
+        database = FirebaseFirestore.getInstance();
         clicked = true;
         user = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
-
         FirebaseApp.initializeApp(ProfileActivity.this);
         storageReference = FirebaseStorage.getInstance().getReference();
         galleryImages = new ArrayList<>();
         imageAdapter = new ImageAdapter(galleryImages, this, ProfileActivity.this);
-
     }
     private void loadUsersDetails(){
         user = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
@@ -112,7 +106,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
         });
 
         if (user.id.equals(preferencesManager.getString(Constants.KEY_USER_ID))){
-        //    binding.imageSignOut.setVisibility(View.VISIBLE);
             binding.bottomNavigation.setVisibility(View.VISIBLE);
             binding.buttonToText.setVisibility(View.GONE);
             binding.addImage.setVisibility(View.VISIBLE);
@@ -130,7 +123,7 @@ import my.first.messenger.databinding.ActivityProfileBinding;
         @Override
         public boolean onOptionsItemSelected(@NonNull MenuItem item) {
             if(item.getItemId()==R.id.sign_out){
-                signOut();
+                 signOut();
             }
             else if (item.getItemId()==R.id.edit){
                 Intent intent = new Intent(getApplicationContext(), EditProfileActivity.class );
@@ -157,72 +150,25 @@ import my.first.messenger.databinding.ActivityProfileBinding;
     }
 
     private void signOut() {
-        makeToast("Signing out...");
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
-                .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .get()
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()&&task.getResult()!=null) {
 
-                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                            FirebaseFirestore.getInstance().collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).document(queryDocumentSnapshot.getId()).delete();
-                        }
-                        }
-                });
-
-        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
-                .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .get()
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()&&task.getResult()!=null) {
-
-                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                            FirebaseFirestore.getInstance().collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).document(queryDocumentSnapshot.getId()).delete();
-                        }
-                    }
-                });
-
-        // UNCOMMENT LATER!!!!!
-
-
-
-        //   if(preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)||preferencesManager.getBoolean(Constants.KEY_IS_GOING)) {
-         //   database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-          //          .collection(Constants.KEY_COLLECTION_USERS)
-           //         .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
-
-         //   if (database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-           //         .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-            //        .collection(Constants.KEY_COLLECTION_USERS).count().equals(0)){
-             //   database.collection("coffeeshops").document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-              //          .update("activated", false);
-
-            //}
-
-       // }
-
-
+        deleteActivation(database, preferencesManager);
+        deleteVisits(database, preferencesManager);
 
         DocumentReference documentReference =
-                database.collection(Constants.KEY_COLLECTION_USERS).document( preferencesManager.getString(Constants.KEY_USER_ID)
-                );
-        HashMap<String, Object> updates =  new HashMap<>();
-        updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
-        documentReference.update(updates)
-                .addOnSuccessListener(unused -> {
-                    preferencesManager.clear();
-                    startActivity(new Intent(getApplicationContext(), LogIn.class));
-                    finish();
-                })
-                .addOnFailureListener(e-> makeToast("Unable to sign out"));
+                    database.collection(Constants.KEY_COLLECTION_USERS).document(preferencesManager.getString(Constants.KEY_USER_ID)
+                    );
+            HashMap<String, Object> updates = new HashMap<>();
+            updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
+            documentReference.update(updates)
+                    .addOnSuccessListener(unused -> {
+                        preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, false);
+                        startActivity(new Intent(getApplicationContext(), LogIn.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> makeToast("Unable to sign out"));
     }
+
     private void setListeners() {
-
-        //Signing out
-       // binding.imageSignOut.setOnClickListener(v -> signOut());
-
-
 
         //Redirecting to chatActivity
         binding.buttonToText.setOnClickListener(v ->{
@@ -245,19 +191,20 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             @Override
             public void onClick(View v) {
                 if (clicked) {
+                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_in_left);
                     binding.userInformation.setVisibility(View.VISIBLE);
+                    binding.userInformation.startAnimation(animation);
                     binding.showInfoButton.setImageResource(R.drawable.wrap);
                     clicked = false;
                 } else {
-                    binding.userInformation.setVisibility(View.GONE);
                     binding.showInfoButton.setImageResource(R.drawable.unwrap);
+                    binding.userInformation.setVisibility(View.GONE);
                     clicked = true;
 
                 }
             }
         });
 
-        // Setting BottomNavigation
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -266,26 +213,37 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                     return true;
                 }
                 else if (item.getItemId()==R.id.map){
+                    database.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,preferencesManager.getString(Constants.KEY_USER_ID))
+                            .get().addOnCompleteListener(task->{
+                                for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                                    preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                                    preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
+                                    preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
+                                    startActivity(new Intent(getApplicationContext(),VisitedActivity.class));
+                                }
+                            });
                     if (preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
                         startActivity(new Intent(getApplicationContext(),ActivatedActivity.class));
-
+                        overridePendingTransition(0,0);
                     }
                     else if (preferencesManager.getBoolean(Constants.KEY_IS_GOING)){
                         startActivity(new Intent(getApplicationContext(),RouteActivity.class));
+                        overridePendingTransition(0,0);
                     }
                     else if(preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
                         startActivity(new Intent(getApplicationContext(),VisitedActivity.class));
+                        overridePendingTransition(0,0);
                     }
                     else {
                         startActivity(new Intent(getApplicationContext(), UserLocationActivity.class));
-                        overridePendingTransition(0, 0);
+                        overridePendingTransition(0,0);
                     }
                     return true;
                 }
                 else if (item.getItemId()==R.id.chat){
                     startActivity(new Intent(getApplicationContext(), RecentConversationsActivity.class));
                     finish();
-                       overridePendingTransition(0,0);
+                    overridePendingTransition(0,0);
                     return true;
                 }
                 else {
@@ -294,8 +252,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             }
         });
     }
-
-
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
@@ -304,40 +260,23 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                     image = new Image();
                     image.uri = result.getData().getData().toString();
                     image.name = UUID.randomUUID().toString();
-                    //      Glide.with(getApplicationContext()).load(image).into(binding.userGallery);
-                    //      Glide.with(getApplicationContext()).load(image).into(binding.profilePicture);
-
                     galleryImages.add(image);
                     imageAdapter.notifyDataSetChanged();
-                    uploadImage(result.getData().getData(), image.name);//imageAdapter.getItemCount()+"");
+                    uploadImage(result.getData().getData(), image.name);
                 }
-            } else {
-                Toast.makeText(ProfileActivity.this, "Please select an image", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                makeToast("Пожалуйста, Выберите фото");
             }
         }
     });
 
-
     private void uploadImage(Uri file, String name) {
         StorageReference ref = storageReference.child("images/"+ user.id+"/" + name);
-        ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                makeToast("uploaded!");
-                binding.progressProfileImage.setVisibility(View.GONE);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast(e.getMessage());
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                //   progressIndicator.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
-                //    progressIndicator.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
-            }
-        });
+        ref.putFile(file).addOnSuccessListener(taskSnapshot -> {
+            makeToast("uploaded!");
+            binding.progressProfileImage.setVisibility(View.GONE);
+        }).addOnFailureListener(e -> makeToast(e.getMessage()));
     }
     private void loadUserGallery(){
         FirebaseStorage.getInstance().getReference().child("images/"+user.id+"/").listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
@@ -366,17 +305,11 @@ import my.first.messenger.databinding.ActivityProfileBinding;
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(ProfileActivity.this, "Failed to retrieve images", Toast.LENGTH_SHORT).show();
+                makeToast("Failed to retrieve the photo");
             }
         });
     }
-
-    private void makeToast(String message){
-        Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
-    }
-
     public void deleteImage(String name){
-        //if(user.id.equals(preferencesManager.getString(Constants.KEY_USER_ID))){
             FirebaseStorage.getInstance().getReference().child("images/" + user.id + "/" + name + "").delete();
             FirebaseStorage.getInstance().getReference().child("images/" + user.id + "/" + name + "").delete();
     }
@@ -386,5 +319,7 @@ import my.first.messenger.databinding.ActivityProfileBinding;
         intent.setDataAndType(Uri.parse(url), "image/*");
         startActivity(intent);
     }
+    private void makeToast(String message){
+            Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
+        }
 }
-

@@ -15,12 +15,11 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -32,25 +31,16 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.osmdroid.util.GeoPoint;
-
-import java.util.HashMap;
-
 import my.first.messenger.R;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 
 public class UserLocationActivity extends AppCompatActivity {
 
-    // initializing
-    // FusedLocationProviderClient
-    // object
+
     PreferencesManager preferencesManager;
     FusedLocationProviderClient mFusedLocationClient;
 
-    // Initializing other items
-    // from layout file
-   // TextView latitudeTextView, longitTextView;
     int PERMISSION_ID = 44;
     Button butt;
 
@@ -60,16 +50,16 @@ public class UserLocationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_location);
         preferencesManager = new PreferencesManager(this);
 
-   //     latitudeTextView = findViewById(R.id.latTextView);
-  //      longitTextView = findViewById(R.id.lonTextView);
+
         FirebaseFirestore database = FirebaseFirestore.getInstance();
+        Intent i = new Intent(getApplicationContext(), MapActivity.class);
+        startActivity(i);
+        overridePendingTransition(0,0);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // method to get the location
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-     //   getLastLocation();
     }
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
@@ -90,16 +80,11 @@ public class UserLocationActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void getLastLocation() {
-        // check if permissions are given
         if (checkPermissions()) {
 
-            // check if location is enabled
             if (isLocationEnabled()) {
 
-                // getting last
-                // location from
-                // FusedLocationClient
-                // object
+
                 mFusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
@@ -107,14 +92,14 @@ public class UserLocationActivity extends AppCompatActivity {
                         if (location == null) {
                             requestNewLocationData();
                         } else {
-                            //latitudeTextView.setText(location.getLatitude() + "");
-                            // longitTextView.setText(location.getLongitude() + "");
+
                             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
                             preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
                             Intent i = new Intent(getApplicationContext(), MapActivity.class);
                             double loc[] = {location.getLatitude(), location.getLongitude()};
                             i.putExtra("location", loc);
                             startActivity(i);
+                            overridePendingTransition(0,0);
                         }
                     }
                 });
@@ -122,10 +107,11 @@ public class UserLocationActivity extends AppCompatActivity {
                 makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
+                overridePendingTransition(0,0);
+
             }
         } else {
-            // if permissions aren't available,
-            // request for permissions
+
             requestPermissions();
         }
     }
@@ -133,8 +119,7 @@ public class UserLocationActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
 
-        // Initializing LocationRequest
-        // object with appropriate methods
+
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(5);
@@ -156,34 +141,26 @@ public class UserLocationActivity extends AppCompatActivity {
             preferencesManager.putString(Constants.KEY_USER_LATITUDE,mLastLocation.getLatitude()+"");
 
             startActivity(i);
+            overridePendingTransition(0,0);
+
         }
     };
 
-    // method to check for permissions
     private boolean checkPermissions() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
-        // If we want background location
-        // on Android 10.0 and higher,
-        // use:
-        // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-    // method to request for permissions
     private void requestPermissions() {
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
     }
 
-    // method to check
-    // if location is enabled
     private boolean isLocationEnabled() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
-    // If everything is alright then
     @Override
     public void
     onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

@@ -72,6 +72,8 @@ public class Constants {
     public static final String KEY_USER_LONGITUDE = "user_longitude";
     public static final String KEY_COFFEESHOP_LATITUDE = "coffeeshop_latitude";
     public static final String KEY_COFFEESHOP_LONGITUDE = "coffeeshop_longitude";
+    public static final String KEY_LATITUDE = "latitude";
+    public static final String KEY_LONGITUDE = "ongitude";
     public static final String KEY_ADDRESS ="address";
     public static final String KEY_COFFEESHOP_ID="coffee_shop_id";
 
@@ -117,5 +119,6 @@ public class Constants {
 
     //Numeric CONST
     public static final int TIME_GAP=1000*60*5;
+
 
 }

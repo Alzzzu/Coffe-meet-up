@@ -76,16 +76,25 @@ dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
-    implementation 'pl.charmas.android:android-reactive-location:0.10@aar'
+    //implementation 'pl.charmas.android:android-reactive-location:0.10@aar'
     implementation 'com.google.firebase:firebase-messaging-directboot:20.2.0'
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01"
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation "androidx.work:work-runtime:2.3.1"
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 
 
-   // implementation 'pl.charmas.android:android-reactive-location2:2.1@aar'
-  //  implementation 'com.google.android.gms:play-services-location:11.0.4' //you can use newer GMS version if you need
-   // implementation 'com.google.android.gms:play-services-places:11.0.4'
-    //implementation 'io.reactivex:rxjava:2.0.5' //you can override RxJava version if you need
-
-
-
+    def work_version = "2.5.0"
+    implementation "androidx.work:work-runtime:$work_version"
+    implementation "androidx.concurrent:concurrent-listenablefuture-callback:1.0.0-beta01"
+    implementation 'androidx.work:work-runtime:2.7.1'
 
 }

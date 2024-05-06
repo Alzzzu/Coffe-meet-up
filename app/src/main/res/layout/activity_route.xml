@@ -12,28 +12,42 @@
         android:visibility="gone"/>
     <ProgressBar
         android:id="@+id/progress"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <LinearLayout
+        android:layout_width="@dimen/_250sdp"
+        android:layout_height="@dimen/_250sdp"
+        android:indeterminateDrawable="@drawable/spinner_ring"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/_80sdp"
+        />
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/cancel"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:alpha="0.6"
+        android:src="@drawable/ic_cancel"/>
+    <TextView
+        android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true">
+        android:layout_below="@id/progress"
+        android:text="Загрузка..."
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:textSize="@dimen/_25sdp"/>
+
+
         <Button
             android:id="@+id/finish"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/_130sdp"
             android:layout_height="@dimen/_40sdp"
-            android:text="Завершить"/>
-        <Button
-            android:id="@+id/cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_40sdp"
-            android:text="Отменить"
-            android:layout_marginBottom="@dimen/_40sdp"/>
+            android:textSize="@dimen/_15sdp"
+            android:alpha="0.6"
+            android:backgroundTint="@color/caramel"
+            android:layout_alignBottom="@id/bottom_navigation"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="@dimen/_40sdp"
+            android:text="Завершить"
+            android:visibility="gone"/>
 
-    </LinearLayout>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
@@ -43,5 +57,7 @@
         app:itemIconTint="@drawable/selector"
         app:itemTextColor="@drawable/selector"
         app:menu="@menu/bottom_nav_menu"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:theme="@style/ThemeOverlay.App.BottomNavigationView"
+        />
 </RelativeLayout>

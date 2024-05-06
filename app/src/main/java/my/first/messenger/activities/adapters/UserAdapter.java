@@ -58,13 +58,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
         void setUserData(User user){
             binding.textName.setText(user.name);
-           // binding.textAge.setText(user.age);
             binding.profilePicture.setImageBitmap(getUserImage(user.image));
             binding.getRoot().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     usersListener.onUserClick(user);
-                    binding.getRoot().setBackgroundColor(Color.GRAY);
+                //    binding.getRoot().setBackgroundColor(Color.GRAY);
                 }
             });
         }

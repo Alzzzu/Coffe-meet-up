@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,30 +7,53 @@
     android:orientation="vertical"
     tools:context=".activities.fragments.SelectFragment">
     <TextView
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Параметры  карты"
+        android:text="Что ищем?"
         android:layout_gravity="center"
         android:layout_marginTop="@dimen/_10sdp"
+        android:layout_centerHorizontal="true"
         android:fontFamily="@font/russ"
-        android:textSize="@dimen/_20ssp"/>
+        android:textSize="@dimen/_25ssp"/>
 
     <Button
         android:id="@+id/users_search"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/_140sdp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_below="@id/title"
         android:layout_marginTop="@dimen/_20sdp"
-        android:text="Искать активные точки" />
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:text="активные точки"
+        android:fontFamily="@font/russ3" />
 
     <Button
         android:id="@+id/coffee_shop_search"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/_145sdp"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/users_search"
-        android:layout_marginTop="@dimen/_5sdp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/title"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
         android:layout_gravity="center"
-        android:layout_marginStart="4dp"
-        android:text="Искать свободные кофейни" />
+        android:text="свободные кофейни"
+        android:fontFamily="@font/russ3" />
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="@dimen/_145sdp"
+        android:layout_height="@dimen/_180sdp"
+        android:src="@drawable/free_coffeeshops"
+        android:layout_below="@id/users_search"
+        android:layout_marginEnd="@dimen/_5sdp"
+        android:layout_alignParentEnd="true"/>
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="@dimen/_145sdp"
+        android:layout_height="@dimen/_180sdp"
+        android:src="@drawable/active_points"
+        android:layout_below="@id/users_search"
+        android:layout_marginEnd="@dimen/_5sdp"
+        android:layout_alignParentStart="true"/>
 
-</LinearLayout>
+
+</RelativeLayout>

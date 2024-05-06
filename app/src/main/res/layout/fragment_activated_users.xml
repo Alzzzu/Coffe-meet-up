@@ -1,49 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.fragments.ActivatedUsersFragment">
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/back"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:src="@drawable/ic_settings"
-        android:layout_below="@id/refresh"
-        android:background="@drawable/rect_background"
-        android:layout_alignTop="@id/refresh"
-        android:layout_toLeftOf="@id/refresh"
-        android:layout_marginRight="@dimen/_10sdp"
-        />
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/refresh"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:src="@drawable/ic_refresh"
-        android:background="@drawable/rect_background"
-        android:layout_alignParentRight="true"
-        />
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/usersRecycleView"
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:overScrollMode="never"
-        android:layout_marginTop="@dimen/_40sdp"
-
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        />
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_container_view"
-        android:name="my.first.messenger.activities.fragments.OptionsFragment"
-        android:layout_width="0dp"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true">
 
 
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="fill_parent"
+            android:layout_height="@dimen/_38sdp"
+            android:textSize="@dimen/_23ssp"
+            android:background="@color/coffee"
+            android:fontFamily="@font/num3"
+            android:gravity="center"
+            android:text="@string/name"
+            android:textColor="@color/white" />
+        <!-- faefa
 
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView3"
+            android:layout_gravity="center"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="@font/russ"
+            android:text="Доступные люди по запросу"
+            android:textSize="@dimen/_20ssp"
+            android:layout_marginTop="@dimen/_2sdp"
+            /-->
 
-</RelativeLayout>
+        <ProgressBar
+            android:id = "@+id/progress"
+            android:layout_width="@dimen/_200sdp"
+            android:layout_height="@dimen/_200sdp"
+            android:progressTint="@color/caramel"
+            android:indeterminateDrawable="@drawable/spinner_ring"
+            android:layout_below="@id/textView3"
+            android:layout_above="@id/loading"
+            android:layout_marginTop="@dimen/_50sdp"
+            android:layout_centerHorizontal="true"
+            />
+        <TextView
+            android:id="@+id/loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Загрузка..."
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:textSize="@dimen/_20ssp"
+            android:layout_marginBottom="@dimen/_20sdp"/>
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/no_users"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_200sdp"
+            android:visibility="gone"
+            android:src ="@drawable/error"
+            android:layout_below="@id/textView3"
+            android:layout_above="@id/loading"
+            android:layout_marginTop="@dimen/_50sdp"
+            android:layout_centerHorizontal="true"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/usersRecycleView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:overScrollMode="never"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_below="@id/textView3"
+            android:layout_marginTop="@dimen/_10sdp"/>
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/back"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:src="@drawable/ic_cancel"
+            android:tint="@color/coffee"
+            android:layout_marginTop="@dimen/_4sdp"
+            android:layout_below="@+id/textView3"
+            android:layout_alignRight="@id/textView3"
+            />
+
+    </RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

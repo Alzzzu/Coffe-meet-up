@@ -1,12 +1,15 @@
 package my.first.messenger.activities.fragments;
 
 import static android.app.Activity.RESULT_OK;
-
 import static java.lang.Long.parseLong;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -15,26 +18,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.firestore.AggregateQuerySnapshot;
-import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -44,29 +37,17 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import my.first.messenger.R;
-import my.first.messenger.activities.adapters.ImageAdapter;
 import my.first.messenger.activities.adapters.ImageDisplayAdapter;
-import my.first.messenger.activities.listeners.ImageGalleryListener;
+import my.first.messenger.activities.listeners.OnSwipeTouchListener;
 import my.first.messenger.activities.main_activities.ChatActivity;
-import my.first.messenger.activities.main_activities.EditProfileActivity;
-import my.first.messenger.activities.main_activities.ProfileActivity;
-import my.first.messenger.activities.main_activities.RecentConversationsActivity;
-import my.first.messenger.activities.main_activities.UserLocationActivity;
-import my.first.messenger.activities.main_activities.UsersActivity;
 import my.first.messenger.activities.models.Image;
 import my.first.messenger.activities.models.User;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
-import my.first.messenger.databinding.ActivityProfileBinding;
-import my.first.messenger.databinding.FragmentMapBinding;
 import my.first.messenger.databinding.FragmentProfileBinding;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class ProfileFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
@@ -96,7 +77,7 @@ public class ProfileFragment extends Fragment {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putSerializable(Constants.KEY_USER, user);
-      //  args.putBoolean("visitor", type);
+        //  args.putBoolean("visitor", type);
         //  args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
@@ -115,12 +96,11 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        makeToast(user.name);
-            binding = FragmentProfileBinding.inflate(inflater, container, false);
-            init();
-            loadUsersDetails();
-            loadUserGallery();
-            setListeners();
+        binding = FragmentProfileBinding.inflate(inflater, container, false);
+        init();
+        loadUsersDetails();
+        loadUserGallery();
+        setListeners();
 
         return binding.getRoot();
     }
@@ -131,7 +111,17 @@ public class ProfileFragment extends Fragment {
         storageReference = FirebaseStorage.getInstance().getReference();
         galleryImages = new ArrayList<>();
         imageAdapter = new ImageDisplayAdapter(galleryImages, getActivity());
+        binding.view.setOnTouchListener(new OnSwipeTouchListener(getActivity()) {
+            public void onSwipeRight() {
+                cancel();
+            }
+        });
 
+    }
+    private void cancel(){
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right).remove(this).commit();
     }
     private void loadUsersDetails(){
         binding.userName.setText(user.name);
@@ -162,43 +152,44 @@ public class ProfileFragment extends Fragment {
         binding.buttonToText.setOnClickListener(v ->{
             if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
-            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                    .get()
-                    .addOnCompleteListener(task->{
-                        int count=0;
-                        for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
-                            count+=1;
+                database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                        .get()
+                        .addOnCompleteListener(task->{
+                                    int count=0;
+                                    for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                                        count+=1;
 
-                        }
-                        if(count==0){
-                            HashMap<String, Object> updt = new HashMap<>();
-                            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
-                            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
-                            updt.put(Constants.KEY_VISITED_ID, user.id);
-                            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
-                            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
-                            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
-                            updt.put(Constants.KEY_VISITED_NAME, user.name);
-                            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
-                            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
-                            makeToast("запрос отправлен");
-                        }
-                    }
-                    );
-        }
+                                    }
+                                    if(count==0){
+                                        HashMap<String, Object> updt = new HashMap<>();
+                                        updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+                                        updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
+                                        updt.put(Constants.KEY_VISITED_ID, user.id);
+                                        updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
+                                        updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
+                                        updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+                                        updt.put(Constants.KEY_VISITED_NAME, user.name);
+                                        updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
+                                        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+                                        makeToast("запрос отправлен");
+                                    }
+                                }
+                        );
+            }
             else{
-            preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
-            Intent intent = new Intent(getActivity(), ChatActivity.class);
-            intent.putExtra(Constants.KEY_USER, user);
-            startActivity(intent);
+                preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
+                Intent intent = new Intent(getActivity(), ChatActivity.class);
+                intent.putExtra(Constants.KEY_USER, user);
+                startActivity(intent);
             }
         });
 
         //back
-     //   binding.imageBack.setOnClickListener(v-> {
-      //      getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();}
-
-       // );
+        binding.imageBack.setOnClickListener(v-> {
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .setCustomAnimations(android.R.anim.slide_in_left,
+                    android.R.anim.slide_out_right).remove(this).commit();}
+        );
 
 
         // hiding and showing information
@@ -256,12 +247,6 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Exception e) {
                 makeToast(e.getMessage());
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                //   progressIndicator.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
-                //    progressIndicator.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
             }
         });
     }

@@ -1,5 +1,6 @@
 package my.first.messenger.activities.adapters;
-import android.util.Log;
+
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +86,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         void setData(ChatMessage chatMessage) {
             if(chatMessage.type.equals("location")){
-                binding.textMessageSent.setText("LOCATION ☕");
+                binding.textMessageSent.setText("LOCATION");
+                binding.textMessageSent.setGravity(Gravity.CENTER_HORIZONTAL);
+                binding.textMessageSent.setBackground(ContextCompat.getDrawable(binding.textMessageSent.getContext(), R.drawable.location_background));
 
             }
             else{
@@ -126,6 +129,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
             binding.textMessageReceived.setText(chatMessage.message);
             binding.textDateTime.setText(chatMessage.dateTime);
             if(chatMessage.type.equals("location")){
+                binding.textMessageReceived.setBackground(ContextCompat.getDrawable(binding.textMessageReceived.getContext(), R.drawable.location_background));
                 binding.getRoot().setOnClickListener(v->{chatMessageListener.onMessageClick(chatMessage, getAdapterPosition());});
             }
         }

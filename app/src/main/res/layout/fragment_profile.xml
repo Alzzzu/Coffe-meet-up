@@ -12,35 +12,34 @@
         android:background="@color/white"
         android:orientation="vertical">
 
-
-
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/parent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"
+            android:background="@color/caramel"
             android:orientation="vertical">
-
-
 
             <View
                 android:id="@+id/view"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_100sdp"
-                android:background="@drawable/for_profile"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/_80sdp"
+                android:background="@drawable/for_profile_2"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView5" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/profilePicture"
                 android:layout_width="@dimen/_80sdp"
                 android:layout_height="@dimen/_80sdp"
                 android:layout_gravity="center_horizontal|bottom"
-                android:layout_marginTop="@dimen/_55sdp"
+                android:layout_marginTop="@dimen/_45sdp"
                 android:scaleType="centerCrop"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView5"
+                app:layout_constraintTop_toTopOf="parent"
                 app:riv_border_color="#333333"
                 app:riv_border_width="2dip"
                 app:riv_corner_radius="30dip"
@@ -51,23 +50,24 @@
                 android:layout_width="@dimen/_50sdp"
                 android:layout_height="@dimen/_80sdp"
                 android:layout_gravity="center_horizontal|bottom"
-                android:layout_marginTop="@dimen/_55sdp"
+                android:layout_marginTop="@dimen/_45sdp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView5" />
-
-            <Button
+                app:layout_constraintTop_toTopOf="parent"/>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/button_to_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="meet-up"
-                android:backgroundTint="@color/white"
-
-                android:textSize="@dimen/_15ssp"
-                android:textColor="@color/black"
+                android:layout_gravity="bottom|end"
+                app:srcCompat="@drawable/baseline_chat_bubble_outline_24"
+                android:backgroundTint="@color/whipped_cream"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/user_name" />
+                android:layout_marginTop="@dimen/_7sdp"
+                android:layout_marginEnd="@dimen/_7sdp"
+                android:elevation="10dp"
+                />
+
 
             <TextView
                 android:id="@+id/user_name"
@@ -82,6 +82,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/profilePicture" />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imageBack"
+                android:layout_width="@dimen/_30sdp"
+                android:layout_height="@dimen/_30sdp"
+                android:alpha="0.4"
+                android:src="@drawable/ic_cancel"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:visibility="gone"/>
+
             <ImageButton
                 android:id="@+id/show_info_button"
                 android:layout_width="match_parent"
@@ -91,7 +101,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/button_to_text" />
+                app:layout_constraintTop_toBottomOf="@+id/user_name" />
 
             <LinearLayout
                 android:visibility="gone"
@@ -136,7 +146,6 @@
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
                     android:textSize="@dimen/_17ssp" />
-
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/user_gallery"
@@ -147,28 +156,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 android:overScrollMode="never"
-
                 app:layout_constraintTop_toBottomOf="@+id/user_information"/>
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_38sdp"
-                android:text="@string/name"
-                android:textSize="@dimen/_23ssp"
-                android:background="@color/coffee"
-                android:textColor="@color/white"
-                android:gravity="center"
-                android:fontFamily="@font/num3"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
-
-
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

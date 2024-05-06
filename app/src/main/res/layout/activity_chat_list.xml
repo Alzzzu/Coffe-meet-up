@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@color/caramel"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".activities.main_activities.ChatListActivity">
+    tools:context=".activities.main_activities.RecentConversationsActivity">
 
     <TextView
-        android:id="@+id/textView4"
-        android:text="@string/name"
+        android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_38sdp"
-        android:textSize="@dimen/_23ssp"
-        android:background="@color/coffee"
-        android:textColor="@color/white"
-        android:gravity="center"
+        android:layout_height="@dimen/_40sdp"
+        android:text="@string/name"
         android:fontFamily="@font/num3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_23ssp"
+        android:layout_marginBottom="@dimen/_5sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/for_profile_2"
+        android:layout_below="@id/title"/>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/conversationsRecycleView"
@@ -30,12 +35,8 @@
         android:orientation="vertical"
         android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4"
-        app:layout_constraintVertical_bias="0.0" />
+        android:layout_below="@+id/title"
+        android:layout_marginTop="@dimen/_15sdp"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -45,8 +46,7 @@
         app:itemBackground="@color/white"
         app:itemIconTint="@drawable/selector"
         app:itemTextColor="@drawable/selector"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/bottom_nav_menu"
+        android:theme="@style/ThemeOverlay.App.BottomNavigationView" />
+</RelativeLayout>

@@ -24,6 +24,7 @@
         app:itemIconTint="@drawable/selector"
         app:itemTextColor="@drawable/selector"
         app:menu="@menu/bottom_nav_menu"
+        android:theme="@style/ThemeOverlay.App.BottomNavigationView"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 
