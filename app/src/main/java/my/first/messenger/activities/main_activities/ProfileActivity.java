@@ -104,12 +104,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                 makeToast(exception.getMessage());
             }
         });
-
-        if (user.id.equals(preferencesManager.getString(Constants.KEY_USER_ID))){
-            binding.bottomNavigation.setVisibility(View.VISIBLE);
-            binding.buttonToText.setVisibility(View.GONE);
-            binding.addImage.setVisibility(View.VISIBLE);
-        }
     }
     private void getToken(){
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
@@ -133,27 +127,21 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             }
             return true;
         }
-
-
     private void updateToken(String token){
-
         preferencesManager.putString(Constants.KEY_FCM_TOKEN,token);
-
-        FirebaseFirestore database  = FirebaseFirestore.getInstance();
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(
                 preferencesManager.getString(Constants.KEY_USER_ID)
         );
-
         documentReference.update(Constants.KEY_FCM_TOKEN, token)
                 .addOnSuccessListener(unused->makeToast("Token changed"))
                 .addOnFailureListener(e -> makeToast("Failed token"));
     }
-
     private void signOut() {
-
         deleteActivation(database, preferencesManager);
         deleteVisits(database, preferencesManager);
-
+        database.collection(Constants.KEY_COLLECTION_USERS)
+                .document(preferencesManager.getString(Constants.KEY_USER_ID))
+                .update(Constants.KEY_AVAILABILITY, 0);
         DocumentReference documentReference =
                     database.collection(Constants.KEY_COLLECTION_USERS).document(preferencesManager.getString(Constants.KEY_USER_ID)
                     );
@@ -166,27 +154,13 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                         finish();
                     })
                     .addOnFailureListener(e -> makeToast("Unable to sign out"));
-    }
-
+        }
     private void setListeners() {
-
-        //Redirecting to chatActivity
-        binding.buttonToText.setOnClickListener(v ->{
-            Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
-            intent.putExtra(Constants.KEY_USER, user);
-            startActivity(intent);
-            finish();}
-        );
-
-        // adding images
         binding.addImage.setOnClickListener(v->{
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             activityResultLauncher.launch(intent);
-
         });
-
-        // hiding and showing information
         binding.showInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -200,7 +174,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                     binding.showInfoButton.setImageResource(R.drawable.unwrap);
                     binding.userInformation.setVisibility(View.GONE);
                     clicked = true;
-
                 }
             }
         });
@@ -208,7 +181,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
                 if (item.getItemId()==R.id.profile){
                     return true;
                 }
@@ -270,7 +242,6 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             }
         }
     });
-
     private void uploadImage(Uri file, String name) {
         StorageReference ref = storageReference.child("images/"+ user.id+"/" + name);
         ref.putFile(file).addOnSuccessListener(taskSnapshot -> {
@@ -298,22 +269,15 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                                 imageAdapter.notifyDataSetChanged();
                             }
                         });
-
                     }
                 });
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast("Failed to retrieve the photo");
-            }
-        });
+        }).addOnFailureListener(e -> makeToast("Неудалось извлечь файл"));
     }
     public void deleteImage(String name){
             FirebaseStorage.getInstance().getReference().child("images/" + user.id + "/" + name + "").delete();
             FirebaseStorage.getInstance().getReference().child("images/" + user.id + "/" + name + "").delete();
     }
-
     public void onImageGalleryClick(String url, int position){
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setDataAndType(Uri.parse(url), "image/*");

@@ -14,7 +14,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 
-import my.first.messenger.R;
 import my.first.messenger.activities.main_activities.RouteActivity;
 import my.first.messenger.activities.models.Coffeeshop;
 import my.first.messenger.activities.utils.Constants;
@@ -90,13 +89,6 @@ public class CoffeeshopFragment extends Fragment {
             preferencesManager.putBoolean(Constants.KEY_IS_GOING,true);
             preferencesManager.putString(Constants.KEY_COFFEESHOP_ID,id);
             startActivity(intent);
-
-            Bundle bundle = new Bundle();
-            bundle.putString(Constants.KEY_COFFEESHOP_ID,id);
-            RouteFragment frag = new RouteFragment();
-
-            frag.setArguments(bundle);
-            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_view, frag).commit();
         });
     }
 }

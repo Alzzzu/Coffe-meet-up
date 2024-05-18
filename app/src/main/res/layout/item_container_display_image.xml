@@ -8,11 +8,11 @@
 
 
     <ImageView
-        android:layout_width="320sp"
-        android:layout_height="400sp"
+        android:id="@+id/list_item_image"
+        android:layout_width="@dimen/_280sdp"
+        android:layout_height="@dimen/_355sdp"
         android:src ="@drawable/coffee_colour"
         android:layout_centerVertical="true"
-        android:id="@+id/list_item_image"
         android:scaleType="centerCrop"/>
 
     <ProgressBar

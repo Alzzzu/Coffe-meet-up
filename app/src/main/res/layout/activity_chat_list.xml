@@ -18,8 +18,7 @@
         android:textColor="@color/white"
         android:textSize="@dimen/_23ssp"
         android:layout_marginBottom="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_5sdp"
-        />
+        android:layout_marginTop="@dimen/_5sdp" />
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"

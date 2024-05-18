@@ -14,15 +14,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <TextView
                 android:id="@+id/title"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:background="@color/coffee"
                 android:fontFamily="@font/num3"
@@ -34,10 +32,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
             <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/progress"
-                android:layout_below="@id/toolbar"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/done"
                 android:layout_width="@dimen/_25sdp"
@@ -45,7 +42,6 @@
                 android:src="@drawable/done"
                 android:tint="@color/coffee"
                 android:layout_gravity="right"/>
-
             <FrameLayout
                 android:id="@+id/layoutPicture"
                 android:layout_width="wrap_content"
@@ -64,41 +60,33 @@
                     android:id="@+id/progress_profile_image"
                     android:layout_width="@dimen/_50sdp"
                     android:layout_height="@dimen/_80sdp"
-                    android:layout_gravity="center_horizontal|bottom"
- />
-
+                    android:layout_gravity="center_horizontal|bottom"/>
             </FrameLayout>
-
             <EditText
                 android:id="@+id/name"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/_25sdp"
                 android:layout_marginRight="@dimen/_25sdp"/>
-
             <EditText
                 android:id="@+id/about"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/_25sdp"
                 android:layout_marginRight="@dimen/_25sdp"/>
-
             <EditText
                 android:id="@+id/hobby"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/_25sdp"
                 android:layout_marginRight="@dimen/_25sdp"
                 android:layout_marginBottom="@dimen/_25sdp"/>
             <ImageView
-                android:layout_width="320sp"
-                android:layout_height="400sp"
-                android:layout_centerVertical="true"
                 android:id="@+id/gallery_image"
+                android:layout_width="@dimen/_280sdp"
+                android:layout_height="@dimen/_355sdp"
                 android:scaleType="centerCrop"
                 android:layout_gravity="center"/>
-
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

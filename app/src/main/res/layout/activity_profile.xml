@@ -5,7 +5,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     tools:context=".activities.main_activities.ProfileActivity">
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,9 +29,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
             </androidx.appcompat.widget.Toolbar>
-
           <TextView
-                android:id="@+id/textView5"
+                android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40sdp"
                 android:textSize="@dimen/_23ssp"
@@ -45,7 +43,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="@dimen/_5sdp" />
-
             <View
                 android:id="@+id/view"
                 android:layout_width="match_parent"
@@ -56,7 +53,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/profilePicture"
                 android:layout_width="@dimen/_80sdp"
@@ -82,26 +78,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-            <Button
-                android:id="@+id/button_to_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Написать"
-                android:background="?android:attr/selectableItemBackground"
-                android:fontFamily="@font/russ"
-                android:textSize="@dimen/_15ssp"
-                android:textColor="@color/black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/user_name" />
-
             <TextView
                 android:id="@+id/user_name"
                 android:layout_width="fill_parent"
                 android:layout_height="60dp"
                 android:fontFamily="@font/russ"
                 android:gravity="center"
-                android:text="Alice"
                 android:textSize="50sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -117,8 +99,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/button_to_text" />
-
+                app:layout_constraintTop_toBottomOf="@id/user_name" />
             <LinearLayout
                 android:id="@+id/user_information"
                 android:layout_width="match_parent"
@@ -128,30 +109,26 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/show_info_button"
                 android:visibility="gone">
-
                 <TextView
                     android:id="@+id/user_age"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/_10sdp"
-                    android:layout_marginBottom="@dimen/_5sdp"
-                    android:text="Возраст: 19"
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
-                    android:textSize="@dimen/_17ssp" />
-
+                    android:textSize="@dimen/_17ssp"
+                    android:layout_marginLeft="@dimen/_10sdp"
+                    android:layout_marginBottom="@dimen/_5sdp"/>
                 <TextView
                     android:id="@+id/user_about"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/_10sdp"
-                    android:layout_marginRight="@dimen/_10sdp"
-                    android:layout_marginBottom="@dimen/_5sdp"
                     android:text="Мария любит пить чай"
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
-                    android:textSize="@dimen/_17ssp" />
-
+                    android:textSize="@dimen/_17ssp"
+                    android:layout_marginLeft="@dimen/_10sdp"
+                    android:layout_marginRight="@dimen/_10sdp"
+                    android:layout_marginBottom="@dimen/_5sdp" />
                 <TextView
                     android:id="@+id/user_hobby"
                     android:layout_width="match_parent"
@@ -163,8 +140,6 @@
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
                     android:textSize="@dimen/_17ssp" />
-
-
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/user_gallery"
@@ -176,18 +151,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:overScrollMode="never"
                 app:layout_constraintTop_toBottomOf="@+id/add_image"/>
-
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/add_image"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:src="@drawable/ic_add"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/user_information"
-                />
-
+                app:layout_constraintTop_toBottomOf="@id/user_information" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </ScrollView>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

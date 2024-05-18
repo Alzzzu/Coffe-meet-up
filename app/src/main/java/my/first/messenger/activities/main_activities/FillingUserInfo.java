@@ -9,10 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -23,14 +20,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -47,16 +42,11 @@ public class FillingUserInfo extends AppCompatActivity {
     private PreferencesManager preferencesManager;
     private FillingProfileBinding binding;
     private StorageReference storageReference;
-
-    private TextView addImageText;
     private User user;
-    private RoundedImageView imageProfile;
     private String encodedImage;
     private static Uri url;
-    private FrameLayout layoutImage;
     private String[] email_and_password;
     private static String gender;
-    private Button finish;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,13 +62,10 @@ public class FillingUserInfo extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReference();
 
         // picture
-        layoutImage = findViewById(R.id.layoutPicture);
-        addImageText = findViewById(R.id.addImageText);
-        imageProfile = findViewById(R.id.profilePicture);
+
         // button
-        finish = findViewById(R.id.button);
         getGender();
-        finish.setOnClickListener(new View.OnClickListener() {
+        binding.button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isValidFilling()){
@@ -88,7 +75,7 @@ public class FillingUserInfo extends AppCompatActivity {
                 }
             }
         });
-        layoutImage.setOnClickListener(v -> {
+        binding.layoutPicture.setOnClickListener(v -> {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 activityResultLauncher.launch(intent);
@@ -149,8 +136,8 @@ public class FillingUserInfo extends AppCompatActivity {
                                 options.inDither = false;
                                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-                                imageProfile.setImageBitmap(bitmap);
-                                addImageText.setVisibility(View.GONE);
+                                binding.profilePicture.setImageBitmap(bitmap);
+                                binding.addImageText.setVisibility(View.GONE);
                                 encodedImage = encodeImage(bitmap);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
@@ -207,11 +194,7 @@ public class FillingUserInfo extends AppCompatActivity {
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == RESULT_OK) {
                 if (result.getData() != null) {
-                   // image = new Image();
                     url = result.getData().getData();
-                 //   makeToast(url+"  ");
-                   // image.name = UUID.randomUUID().toString();
-                    //      Glide.with(getApplicationContext()).load(image).into(binding.userGallery);
                           Glide.with(getApplicationContext()).load(url).into(binding.profilePicture);
                     try {
                         InputStream inputStream = getContentResolver().openInputStream(url);
@@ -220,8 +203,8 @@ public class FillingUserInfo extends AppCompatActivity {
                         options.inDither = false;
                         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-                        imageProfile.setImageBitmap(bitmap);
-                        addImageText.setVisibility(View.GONE);
+                        binding.profilePicture.setImageBitmap(bitmap);
+                        binding.addImageText.setVisibility(View.GONE);
                         encodedImage = encodeImage(bitmap);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -245,12 +228,7 @@ public class FillingUserInfo extends AppCompatActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast(e.getMessage());
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+        }).addOnFailureListener(e -> makeToast(e.getMessage())).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
             }

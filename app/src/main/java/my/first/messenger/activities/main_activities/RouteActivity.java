@@ -75,6 +75,7 @@ public class RouteActivity extends AppCompatActivity {
     private static final String TAG = "ROUTE_ACT";
     private FirebaseFirestore database;
     private MyLocationNewOverlay mLocationOverlay;
+    private LocationCallback locationCallback;
 
 
     @Override
@@ -136,8 +137,6 @@ public class RouteActivity extends AppCompatActivity {
             }
         }
     };
-
-
     private void settingMap() {
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -292,9 +291,6 @@ public class RouteActivity extends AppCompatActivity {
             }
         }.start();
     }
-
-
-
     private void makeToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
@@ -319,118 +315,115 @@ public class RouteActivity extends AppCompatActivity {
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true);
-        Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
-        //PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        //mBuilder.setContentIntent(pi);
-       // mNotificationManager.notify(0, mBuilder.build());
+    }
+    private void removing() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
-
-
-  public void locationUpdates(){
+    public void locationUpdates(){
         try{
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
-        }
-        locationRequest = locationRequest.create();
-        locationRequest.setInterval(100);
-        locationRequest.setFastestInterval(50);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(RouteActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+            }
+            locationRequest = locationRequest.create();
+            locationRequest.setInterval(100);
+            locationRequest.setFastestInterval(50);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        LocationCallback locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
+            LocationCallback locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
 
-                if (locationResult != null) {
-                    for (Location location : locationResult.getLocations()) {
-                        HashMap<String, Object> updt = new HashMap<>();
-                        updt.put("latitude", location.getLatitude());
-                        updt.put("longitude", location.getLongitude());
-                        if (0.05>distance(location.getLatitude(), location.getLongitude(),
-                                parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LATITUDE)),
-                                parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE))))
-                        {
-                            if (preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
-                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                                    .collection(Constants.KEY_COLLECTION_USERS)
-                                    .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
+                    if (locationResult != null) {
+                        for (Location location : locationResult.getLocations()) {
+                            HashMap<String, Object> updt = new HashMap<>();
+                            updt.put("latitude", location.getLatitude());
+                            updt.put("longitude", location.getLongitude());
+                            if (0.05>distance(location.getLatitude(), location.getLongitude(),
+                                    parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LATITUDE)),
+                                    parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE))))
+                            {
+                                if (preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
+                                    database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                            .collection(Constants.KEY_COLLECTION_USERS)
+                                            .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
 
-                            preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
-                            preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                            fusedLocationProviderClient.removeLocationUpdates(this);
-                            startActivity( new Intent(getApplicationContext(), ActivatedActivity.class));
-                            finish();
+                                    preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
+                                    preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                                    fusedLocationProviderClient.removeLocationUpdates(this);
+                                    startActivity( new Intent(getApplicationContext(), ActivatedActivity.class));
+                                    finish();
+                                }
+                                else {
+                                    showNotification("Поздравляем!", "Вы достигли точки, удачного кофепития)");
+                                    preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                                    preferencesManager.putString(Constants.KEY_VISITED_ID,"");
+                                    preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
+
+                                    FirebaseFirestore database = FirebaseFirestore.getInstance();
+
+                                    database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                            .update("activated", false);
+
+                                    database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                            .collection(Constants.KEY_COLLECTION_USERS)
+                                            .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+                                    database.collection(Constants.KEY_COLLECTION_VISITS)
+                                            .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                                            .get()
+                                            .addOnCompleteListener(task->{
+                                                for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                                                    database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
+                                                }
+                                            });
+                                    fusedLocationProviderClient.removeLocationUpdates(this);
+
+
+                                    Intent i = new Intent(getApplicationContext(), MapActivity.class);
+                                    startActivity(i);
+
+                                }
                             }
-                            else {
-                                showNotification("Поздравляем!", "Вы достигли точки, удачного кофепития)");
-                                preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                                preferencesManager.putString(Constants.KEY_VISITED_ID,"");
-                                preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
 
-                                FirebaseFirestore database = FirebaseFirestore.getInstance();
+                            preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
+                            preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
 
-                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                                        .update("activated", false);
+                            FirebaseFirestore database = FirebaseFirestore.getInstance();
 
-                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                            if(!preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
+                                // deleteVisits(database, preferencesManager);
+                            }
+                            else{
+                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+                                        .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
                                         .collection(Constants.KEY_COLLECTION_USERS)
-                                        .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
-                                database.collection(Constants.KEY_COLLECTION_VISITS)
-                                        .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                                        .get()
-                                        .addOnCompleteListener(task->{
-                                            for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                                                database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
-                                            }
-                                        });
-                                fusedLocationProviderClient.removeLocationUpdates(this);
-
-
-                                Intent i = new Intent(getApplicationContext(), MapActivity.class);
-                                startActivity(i);
-
+                                        .document(preferencesManager.getString(Constants.KEY_USER_ID))
+                                        .update(updt);
                             }
-                        }
-
-                        preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
-                        preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
-
-                        FirebaseFirestore database = FirebaseFirestore.getInstance();
-
-                        if(!preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
-                           // deleteVisits(database, preferencesManager);
-                        }
-                        else{
-                            database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                                    .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-                                    .collection(Constants.KEY_COLLECTION_USERS)
-                                    .document(preferencesManager.getString(Constants.KEY_USER_ID))
-                                    .update(updt);
                         }
                     }
+                    else{
+
+                        preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                        db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                .update("activated", false);
+
+                        db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                .collection(Constants.KEY_COLLECTION_USERS)
+                                .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
+
+                        Intent i = new Intent(getApplicationContext(), MapActivity.class);
+                        startActivity(i);
+
+                    }
                 }
-                else{
 
-                    preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                    FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                    db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                            .update("activated", false);
-
-                    db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                            .collection(Constants.KEY_COLLECTION_USERS)
-                            .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
-
-                    Intent i = new Intent(getApplicationContext(), MapActivity.class);
-                    startActivity(i);
-
-                }
-                }
-
-        };
+            };
 
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         }
@@ -439,5 +432,6 @@ public class RouteActivity extends AppCompatActivity {
         }
     }
 }
+
 
 

@@ -40,10 +40,8 @@ public class MapActivity extends FragmentActivity {
     ActivityMapBinding binding;
     FusedLocationProviderClient mFusedLocationClient;
     BottomNavigationView bottomNavigationView;
-    // Идентификатор уведомления
     private static final int NOTIFY_ID = 101;
 
-    // Идентификатор канала
     private static final int PERMISSION_1 = 1;
 
     private PreferencesManager preferencesManager;
@@ -65,7 +63,6 @@ public class MapActivity extends FragmentActivity {
         binding.bottomNavigation.setSelectedItemId(R.id.map);
         init();
         setListeners();
-   //     startLocationWork();
     }
 
     public void makeToast(String message) {
@@ -73,18 +70,6 @@ public class MapActivity extends FragmentActivity {
     }
     public void init(){
         preferencesManager = new PreferencesManager(getApplicationContext());
-            // FirebaseFirestore db = FirebaseFirestore.getInstance();
-       //   String[] a = {"ТРЦ ‎Европейский, 1 этаж. Площадь Киевского вокзала, 2","ТРЦ ‎Европейский, 4 этаж. Площадь Киевского вокзала, 2","ТРЦ Ереван Плаза. Большая Тульская ул., д.13","ТРЦ Март, Большая Семеновская ул., 17А","ТРЦ Океания. Кутузовский просп., 57","ТРЦ Свиблово. Снежная ул., 27","ТЦ 'Цитрус'. Московская ул., 14А, Химки","Профсоюзная ул., 102, стр. 1","Большой Овчинниковский пер., 16","Барклая ул., 10","ТЦ «‎Варшавский». Варшавское., 87б, 3 этаж","Венёвская ул., 6","Головинское ш., 5, корп. 1","ТЦ «‎Город», 1 этаж. ш., Энтузиастов, 12, корп. 2","ТЦ «‎Город», 3 этаж. ш., Энтузиастов, 12, корп. 2","ТЦ «‎Город», 2 этаж. Рязанский просп., 2 корп. 2","Большая Тульская ул., 13","Большая Семёновская ул., 20","ТЦ «‎Калита». Новоясеневский просп., 7","Профсоюзная ул., 61А","ТЦ «‎Колумбус». Кировоградская ул., 13А","ТЦ Колумбус. Красного Маяка ул., 2Б","ТЦ «‎Круг», Старокачаловская ул., 5А","Тушинская ул., 16, стр. 2","ТЦ Ладья. Дубравная ул., 34/29","1-й Покровский пр., 5, Котельники","1-й Покровский пр., 1, Котельники","8-й микрорайон, Новокуркино, 4, Химки","ТЦ «‎Облака». Ореховый б-р., 22А","Киевское ш., 22-ой км, 4, стр. 1","Таганская ул., 2","Декабристов ул., 12","ТЦ «‎Штаер». Балаклавский просп., 5А, стр. 10","Кавказский бульвар, 17","ТЦ XL. Дмитровское ш., 89","ТЦ Ашан. Пролетарский просп., 30","ТЦ БУМ. Перерва ул., 43, корп. 1","ТЦ Капитолий. Большая Серпуховская ул., 45, Подольск","ТЦ «‎Колумбус». Кировоградская ул., 13А","ТЦ Маяк. Рязанский просп., 99А","ТЦ Метрополис, 1 этаж. Ленинградское ш. 16А стр. 4","ТЦ Метрополис, 2 этаж. Ленинградское ш. 16А стр. 4","ТЦ Метрополис, 3 этаж. Ленинградское ш. 16А стр. 4","ТЦ Речной, Фестивальная ул., 2Б","ТЦ Щелчок. Уральская ул., 1А","ул. Ленинская Слобода, д. 19","ул. Маросейка д 4\2 стр. 1","улица Баррикадная, дом 12/2, строение 3","Усачёва ул., 29, корп. 1","Хоромный тупик, 2/6","Цветной бул., 25, стр. 1","Цветной бул., 7, стр. 1","Цветной бульвар, 21с1","ЦДМ, Театральный пр., 5, стр. 1","Шаболовка ул., 34, стр. 3","Шаболовка ул., д. 30/12","ш. Энтузиастов, 31","Щепкина ул., 47, стр. 1","Южная ул., 2, Реутов","Ярцевская ул., 25А"};
-        // for(String i:a){
-          // HashMap<String, Object> b = new HashMap<>();
-           //GeoPoint g = new GeoPoint(parseDouble(preferenceManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferenceManager.getString(Constants.KEY_USER_LONGITUDE)));
-           // b.put("address","ул.Невзоровых 66А");
-           // b.put("name", "PANDA");
-           // b.put("longitude", g.getLongitude());
-           // b.put("latitude", g.getLatitude());
-           // db.collection("coffeeshops").add(b);
-
-//     }
     }
     private void setListeners(){
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

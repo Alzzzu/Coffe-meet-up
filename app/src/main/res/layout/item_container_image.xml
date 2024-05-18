@@ -5,8 +5,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:padding="10sp">
-
-
     <ImageView
         android:id="@+id/list_item_image"
         android:layout_width="@dimen/_280sdp"
@@ -27,13 +25,9 @@
             android:layout_height="@dimen/_30sdp"
             android:layout_gravity="center"
             android:src="@drawable/delete" />
-
     </FrameLayout>
     <ProgressBar
         android:id="@+id/progress_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
-
-
+        android:layout_height="match_parent" />
 </RelativeLayout>

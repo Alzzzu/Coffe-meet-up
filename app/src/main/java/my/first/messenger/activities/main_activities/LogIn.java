@@ -2,7 +2,6 @@ package my.first.messenger.activities.main_activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -21,19 +20,18 @@ public class LogIn extends AppCompatActivity {
     private User user;;
     private LoginBinding binding;
     private PreferencesManager preferencesManager;
-    private final String TAG ="TAGGER";
+    private FirebaseFirestore database;
+    private final String TAG ="LogIn";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    //    FirebaseMessaging.getInstance().setAutoInitEnabled(true);
-
 
 
         // initializing classes
         preferencesManager = new PreferencesManager(getApplicationContext());
         user = new User();
-       FirebaseFirestore db = FirebaseFirestore.getInstance();
+        database = FirebaseFirestore.getInstance();
 
           if(preferencesManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
             Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
@@ -44,45 +42,35 @@ public class LogIn extends AppCompatActivity {
               user.age = preferencesManager.getString(Constants.KEY_AGE);
               user.gender = preferencesManager.getString(Constants.KEY_GENDER);
               user.image = preferencesManager.getString(Constants.KEY_IMAGE);
-              db.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,user.id)
-                              .get().addOnCompleteListener(task->{
-                                  for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                                      preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
-                                      preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
-                                      preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
-                                  }
-
-                      });
+              database.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,user.id)
+                  .get().addOnCompleteListener(task->{
+                      for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
+                          preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                          preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
+                          preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
+                      }
+                  });
             i.putExtra(Constants.KEY_USER, user);
             startActivity(i);
             finish();
         }
-        Log.d(TAG, "PASSED");
+
         binding = LoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setListeners();
-
     }
-
         private void setListeners(){
-
-        // log in button pressed
         binding.login.setOnClickListener(v-> {
-                checkUser(binding.email.getText().toString(), binding.password.getText().toString());
+            checkUser(binding.email.getText().toString(), binding.password.getText().toString());
         });
-
-        // register button pressed
         binding.register.setOnClickListener(v-> {
-
-                Intent i = new Intent(LogIn.this, SignUp.class);
-                startActivity(i);
-
+            Intent i = new Intent(LogIn.this, SignUp.class);
+            startActivity(i);
         });
     }
 
     // check if user exist in database
     private void checkUser(String user_email, String user_password) {
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .whereEqualTo(Constants.KEY_EMAIL, binding.email.getText().toString())
                 .whereEqualTo(Constants.KEY_PASSWORD, binding.password.getText().toString())
@@ -115,7 +103,7 @@ public class LogIn extends AppCompatActivity {
                         binding.incorrect.setVisibility(View.VISIBLE);
                     }
                 });
-    }
+        }
     public void makeToast(String message){
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
     }

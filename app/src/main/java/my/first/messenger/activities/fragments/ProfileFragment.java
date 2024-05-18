@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -20,7 +22,6 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -49,17 +50,8 @@ import my.first.messenger.databinding.FragmentProfileBinding;
 
 
 public class ProfileFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-
     private User user;
     private FragmentProfileBinding binding;
-    // private TextView name, age, hobby, about;
     private PreferencesManager preferencesManager;
     StorageReference storageReference;
     private ArrayList<Image> galleryImages;
@@ -70,19 +62,14 @@ public class ProfileFragment extends Fragment {
     private Image image;
 
     public ProfileFragment(){
-        // Required empty public constructor
     }
-    // TODO: Rename and change types and number of parameters
     public static ProfileFragment newInstance(User user, Boolean type) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putSerializable(Constants.KEY_USER, user);
-        //  args.putBoolean("visitor", type);
-        //  args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,11 +78,8 @@ public class ProfileFragment extends Fragment {
             type = getArguments().getBoolean("visitor");
         }
     }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentProfileBinding.inflate(inflater, container, false);
         init();
         loadUsersDetails();
@@ -134,18 +118,11 @@ public class ProfileFragment extends Fragment {
                 Glide.with(getActivity()).load(uri).into(binding.profilePicture);
                 binding.progressProfileImage.setVisibility(View.GONE);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                makeToast(exception.getMessage());
-            }
-        });
+        }).addOnFailureListener(exception -> makeToast(exception.getMessage()));
     }
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
-
-
     private void setListeners() {
 
         //Redirecting to chatActivity
@@ -158,7 +135,6 @@ public class ProfileFragment extends Fragment {
                                     int count=0;
                                     for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
                                         count+=1;
-
                                     }
                                     if(count==0){
                                         HashMap<String, Object> updt = new HashMap<>();
@@ -175,7 +151,7 @@ public class ProfileFragment extends Fragment {
                                     }
                                 }
                         );
-            }
+                }
             else{
                 preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
@@ -191,28 +167,24 @@ public class ProfileFragment extends Fragment {
                     android.R.anim.slide_out_right).remove(this).commit();}
         );
 
-
         // hiding and showing information
         binding.showInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (clicked) {
+                    Animation animation = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
                     binding.userInformation.setVisibility(View.VISIBLE);
+                    binding.userInformation.startAnimation(animation);
                     binding.showInfoButton.setImageResource(R.drawable.wrap);
                     clicked = false;
                 } else {
                     binding.userInformation.setVisibility(View.GONE);
                     binding.showInfoButton.setImageResource(R.drawable.unwrap);
                     clicked = true;
-
                 }
             }
         });
-
-
     }
-
-
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
@@ -221,9 +193,6 @@ public class ProfileFragment extends Fragment {
                     image = new Image();
                     image.uri = result.getData().getData().toString();
                     image.name = UUID.randomUUID().toString();
-                    //      Glide.with(getApplicationContext()).load(image).into(binding.userGallery);
-                    //      Glide.with(getApplicationContext()).load(image).into(binding.profilePicture);
-
                     galleryImages.add(image);
                     imageAdapter.notifyDataSetChanged();
                     uploadImage(result.getData().getData(), image.name);//imageAdapter.getItemCount()+"");
@@ -233,8 +202,6 @@ public class ProfileFragment extends Fragment {
             }
         }
     });
-
-
     private void uploadImage(Uri file, String name) {
         StorageReference ref = storageReference.child("images/"+ user.id+"/" + name);
         ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -243,12 +210,7 @@ public class ProfileFragment extends Fragment {
                 makeToast("uploaded!");
                 binding.progressProfileImage.setVisibility(View.GONE);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast(e.getMessage());
-            }
-        });
+        }).addOnFailureListener(e -> makeToast(e.getMessage()));
     }
     private void loadUserGallery(){
         FirebaseStorage.getInstance().getReference().child("images/"+user.id+"/").listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
@@ -274,11 +236,6 @@ public class ProfileFragment extends Fragment {
                     }
                 });
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getActivity(), "Failed to retrieve images", Toast.LENGTH_SHORT).show();
-            }
-        });
+        }).addOnFailureListener(e -> makeToast("Неудалось извлечь файл"));
     }
 }
