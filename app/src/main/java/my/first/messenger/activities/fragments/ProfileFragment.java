@@ -124,8 +124,6 @@ public class ProfileFragment extends Fragment {
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
     private void setListeners() {
-
-        //Redirecting to chatActivity
         binding.buttonToText.setOnClickListener(v ->{
             if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -160,14 +158,12 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        //back
         binding.imageBack.setOnClickListener(v-> {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.anim.slide_in_left,
                     android.R.anim.slide_out_right).remove(this).commit();}
         );
 
-        // hiding and showing information
         binding.showInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

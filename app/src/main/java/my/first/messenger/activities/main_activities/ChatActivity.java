@@ -70,7 +70,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         try{
         listenMessages();}
         catch (Exception e){
-            Log.d("CHAT_ACT", e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
     }
     private void init(){
@@ -208,10 +208,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             int count = chatMessages.size();
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
-                    Log.d("CHAT_ACT", "ADDED");
                     try{
                     if (documentChange.getDocument().getString("type").equals("message")){
-                        Log.d("CHAT_ACT", "ADDED1");
                         ChatMessage chatMessage = new ChatMessage();
                         chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                         chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -222,10 +220,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                         chatMessage.type =documentChange.getDocument().getString("type");
                         chatMessage.clicked = false;
                         chatMessages.add(chatMessage);
-                        Log.d("CHAT_ACT", "EVENT1");
-                    }
+                  }
                     else{
-                        Log.d("CHAT_ACT", "LOCATION");
                         ChatMessage chatMessage = new ChatMessage();
                         chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                         chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -236,16 +232,13 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                         chatMessage.type ="location";
                         chatMessage.message = "LOCATION ☕";
                         chatMessages.add(chatMessage);
-                        Log.d("CHAT_ACT", "EVENT2");
                     }}
                     catch(Exception e){
-                        Log.d("CHAT_ACT", e.getMessage());
+                        Log.e(TAG, e.getMessage());
                     }
                     isAdded = true;
                 }
                 if (documentChange.getType() == DocumentChange.Type.REMOVED){
-                    Log.d("CHAT_ACT", "EVENT DE");
-
                     int position;
                     for( ChatMessage message: chatMessages){
                         if (message.id.equals(documentChange.getDocument().getId())){
@@ -257,7 +250,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     }
                 }
                 if (documentChange.getType() == DocumentChange.Type.MODIFIED){
-                    Log.d("CHAT_ACT", "EVENT ED");
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -278,16 +270,12 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                     }
                 }
             }
-            Log.d("CHAT_ACT", "EVENTSORT");
-
 
             Collections.sort(chatMessages, (obj1, obj2)-> obj1.dateObject.compareTo(obj2.dateObject));
             if (count==0){
-                Log.d("CHAT_ACT", "EVENT NULL");
                 chatAdapter.notifyDataSetChanged();
             }
             else{
-                Log.d("CHAT_ACT", "ADAPTER");
                 chatAdapter.notifyItemRangeInserted(count, chatMessages.size());
                 chatAdapter = new ChatAdapter(
                         chatMessages,
@@ -298,7 +286,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
             }
             binding.chatRecycleView.setVisibility(View.VISIBLE);
         }
-        Log.d("CHAT_ACT", "CONVERSATION");
         if (conversationId == null){
             checkForConversation();
         }

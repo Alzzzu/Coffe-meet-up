@@ -37,11 +37,9 @@ public class CoffeeshopFragment extends Fragment {
         args.putString(Constants.KEY_ADDRESS, address);
         args.putString(Constants.KEY_NAME, name);
         args.putString(Constants.KEY_COFFEESHOP_ID, id);
-
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +51,6 @@ public class CoffeeshopFragment extends Fragment {
             database = FirebaseFirestore.getInstance();
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

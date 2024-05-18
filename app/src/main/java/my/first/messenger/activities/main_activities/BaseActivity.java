@@ -1,20 +1,17 @@
 package my.first.messenger.activities.main_activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import my.first.messenger.R;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 
 public class BaseActivity extends AppCompatActivity {
-
     private DocumentReference documentReference;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

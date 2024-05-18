@@ -50,7 +50,7 @@
         android:tint="#66FF0000"
         android:alpha="0.75">
     <EditText
-        android:id="@+id/editTextTextEmailAddress"
+        android:id="@+id/email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -85,7 +85,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/finish"
         android:layout_width="@dimen/_150sdp"
         android:layout_gravity="center"
         android:layout_height="wrap_content"
@@ -95,9 +95,6 @@
         android:background="?android:attr/selectableItemBackground"
         android:textSize="@dimen/_20ssp"
         android:alpha="0.8"/>
-
-
-
 </LinearLayout>
 </RelativeLayout>
 

@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -54,16 +53,10 @@ public class FillingUserInfo extends AppCompatActivity {
         setContentView(binding.getRoot());
         url =null;
 
-        //
         email_and_password = getIntent().getStringArrayExtra("email and password");
-        // classes
         preferencesManager = new PreferencesManager(getApplicationContext());
         user = new User();
         storageReference = FirebaseStorage.getInstance().getReference();
-
-        // picture
-
-        // button
         getGender();
         binding.button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -209,7 +202,6 @@ public class FillingUserInfo extends AppCompatActivity {
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
-
                 }
             } else {
                 Toast.makeText(FillingUserInfo.this, "Please select an image", Toast.LENGTH_SHORT).show();
@@ -218,16 +210,13 @@ public class FillingUserInfo extends AppCompatActivity {
     });
     private void uploadImage(Uri file, String name, String id) {
         StorageReference ref = storageReference.child("images/"+id+"/" + name);
-        ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                makeToast("uploaded!");
-                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                intent.putExtra(Constants.KEY_USER, user);
-                finish();
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-            }
+        ref.putFile(file).addOnSuccessListener(taskSnapshot -> {
+            makeToast("uploaded!");
+            Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+            intent.putExtra(Constants.KEY_USER, user);
+            finish();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }).addOnFailureListener(e -> makeToast(e.getMessage())).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
