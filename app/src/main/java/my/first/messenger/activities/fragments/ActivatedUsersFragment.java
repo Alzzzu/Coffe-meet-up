@@ -9,7 +9,6 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,20 +26,13 @@ import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.FragmentActivatedUsersBinding;
 
 public class ActivatedUsersFragment extends Fragment implements UsersListener {
-
-
     private FragmentActivatedUsersBinding binding;
-    private LocationRequest locationRequest;
-
     private FusedLocationProviderClient fusedLocationProviderClient;
     private PreferencesManager preferencesManager;
-    private final String id = "preferencesManager.getString(Constants.KEY_COFFEESHOP_ID)";
     private final String TAG ="ActiveUsersFragment";
 
     public ActivatedUsersFragment() {
-        // Required empty public constructor
     }
-
     public static ActivatedUsersFragment newInstance(String param1, String param2) {
         ActivatedUsersFragment fragment = new ActivatedUsersFragment();
         Bundle args = new Bundle();
@@ -48,14 +40,12 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
 
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -69,7 +59,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
     private void init(){
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
-
     private void setListeners(){
         binding.back.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
@@ -80,9 +69,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                     .commit();
         });
         binding.swipeRefreshLayout.setOnRefreshListener(this::getMeetingUsers);
-
     }
-
     private void getMeetingUsers(){
         FirebaseFirestore database= FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
@@ -94,7 +81,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         UserAdapter userAdapter = new UserAdapter(users, this);
                         binding.usersRecycleView.setAdapter(userAdapter);
                         for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                            makeToast("ge");
                             if(queryDocumentSnapshot.getLong(Constants.KEY_AGE)>=preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
                             &&queryDocumentSnapshot.getLong(Constants.KEY_AGE)<=preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
                             &&!queryDocumentSnapshot.getString(Constants.KEY_GENDER).equals(preferencesManager.getString(Constants.KEY_SEARCH_GENDER))){
@@ -119,8 +105,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         binding.noUsers.setVisibility(View.GONE);
                         binding.usersRecycleView.setAdapter(userAdapter);
                         binding.swipeRefreshLayout.setRefreshing(false);
-                            makeToast("ur");
-
                         }
                     }
                     else {
@@ -128,10 +112,9 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         binding.progress.setVisibility(View.GONE);
                         binding.loading.setText("Пользователи по запросу не найдены");
                         binding.swipeRefreshLayout.setRefreshing(false);
-                        makeToast("er");
                     }
                 });
-    }
+        }
 
     @Override
     public void onUserClick(User user) {
@@ -157,7 +140,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
 
                     }
                 });
-    }
+            }
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }

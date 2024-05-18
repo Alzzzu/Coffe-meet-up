@@ -37,22 +37,18 @@ public class UsersFragment extends Fragment implements UsersListener {
     private UserAdapter userAdapter;
     private static final String TAG = "UsersFragmentLog";
     public UsersFragment() {
-        // Required empty public constructor
     }
-    // TODO: Rename and change types and number of parameters
     public static UsersFragment newInstance(){
         UsersFragment fragment = new UsersFragment();
         Bundle args = new Bundle();
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -68,10 +64,7 @@ public class UsersFragment extends Fragment implements UsersListener {
         userAdapter = new UserAdapter(users, this);
     }
     private void setListeners(){
-
-
         binding.swipeRefreshLayout.setOnRefreshListener(this::getActiveUsers);
-
           binding.imageBack.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
@@ -90,11 +83,9 @@ public class UsersFragment extends Fragment implements UsersListener {
                 .whereEqualTo("activated", true)
                 .get()
                 .addOnCompleteListener(task->{
-
                     if(task.isSuccessful()&&task.getResult()!=null&&task.getResult().size()!=0) {
                         Log.d(TAG, "first listener completed");
                         int coffeeShopCounter = 0;
-
                         for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                             double lat = queryDocumentSnapshot.getDouble("latitude");
                             double lng = queryDocumentSnapshot.getDouble("longitude");
@@ -140,30 +131,14 @@ public class UsersFragment extends Fragment implements UsersListener {
                                                 }
                                             }
                                         });
-                            }
-                        }
+                                    }
+                             }
                         if (coffeeShopCounter==0){
                             binding.noUsers.setVisibility(View.VISIBLE);
                             binding.progress.setVisibility(View.GONE);
                             binding.swipeRefreshLayout.setRefreshing(false);
                             binding.loading.setText("Пользователи по запросу не найдены");
                         }
-                        /**
-
-                         * if (users.size()>0) {
-                                    UserAdapter userAdapter = new UserAdapter(users, this);
-                                    binding.usersRecycleView.setAdapter(userAdapter);
-                                    binding.usersRecycleView.setVisibility(View.VISIBLE);
-                                    binding.swipeRefreshLayout.setRefreshing(false);
-                                    binding.progress.setVisibility(View.GONE);
-                                    binding.loading.setVisibility(View.GONE);
-                                }
-
-                                    else{
-                                        binding.noUsers.setVisibility(View.VISIBLE);
-                                        binding.progress.setVisibility(View.GONE);
-                                    }
-**/
                     }
                     else{
                         Log.d(TAG, "no result");
@@ -171,55 +146,9 @@ public class UsersFragment extends Fragment implements UsersListener {
                         binding.progress.setVisibility(View.GONE);
                         binding.swipeRefreshLayout.setRefreshing(false);
                         binding.loading.setText("Пользователи по запросу не найдены");
-
                     }
                 });
-
-    }
-    private void getUsers(){
-
-        FirebaseFirestore database= FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .whereNotEqualTo(Constants.KEY_GENDER,  preferenceManager.getString(Constants.KEY_SEARCH_GENDER))
-                .get()
-                .addOnCompleteListener(task -> {
-                    String currentUserId = preferenceManager.getString(Constants.KEY_USER_ID);
-                    if(task.isSuccessful()&&task.getResult()!=null){
-                        List<User> users = new ArrayList<>();
-                        for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                            if(currentUserId.equals(queryDocumentSnapshot.getId())){
-                                continue;
-                            }
-                            if (queryDocumentSnapshot.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)&&queryDocumentSnapshot.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)){
-                            User user = new User();
-                            user.name=queryDocumentSnapshot.getString(Constants.KEY_NAME);
-                            user.age=(queryDocumentSnapshot.getLong(Constants.KEY_AGE)).toString();
-                            user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
-                            user.about = queryDocumentSnapshot.getString(Constants.KEY_ABOUT);
-                            user.hobby = queryDocumentSnapshot.getString(Constants.KEY_HOBBIES);
-                            user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
-                            user.id = queryDocumentSnapshot.getId();
-                            users.add(user);
-                            }
-                        }
-                        if (users.size()>0){
-                            UserAdapter userAdapter = new UserAdapter(users, this::onUserClick);
-                            binding.usersRecycleView.setAdapter(userAdapter);
-                            binding.usersRecycleView.setVisibility(View.VISIBLE);
-                        }
-                        else{
-                            makeToast("no users found");
-                        }
-                    }
-                })
-                .addOnFailureListener(task->{
-                    binding.progress.setVisibility(View.GONE);
-                    binding.loading.setVisibility(View.GONE);
-                    binding.noUsers.setVisibility(View.VISIBLE);
-
-                });
-
-    }
+        }
     @Override
     public void onUserClick(User user){
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
@@ -239,14 +168,9 @@ public class UsersFragment extends Fragment implements UsersListener {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                             .add(R.id.fragment_container_view, frag).commit();
-
                 });
-
-
-        // startActivity(intent);
-    }
+        }
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
-
 }

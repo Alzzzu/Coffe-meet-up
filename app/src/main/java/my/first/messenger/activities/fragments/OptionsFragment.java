@@ -16,12 +16,6 @@ import my.first.messenger.R;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.FragmentOptionsBinding;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link OptionsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class OptionsFragment extends Fragment {
 
     private PreferencesManager preferencesManager;
@@ -38,25 +32,19 @@ public class OptionsFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
     }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         binding = FragmentOptionsBinding.inflate(inflater, container, false);
         init();
         loadSettings();
         setListeners();
-
         return binding.getRoot();
-
     }
     private void init(){
         preferencesManager = new PreferencesManager(getActivity());
@@ -74,8 +62,6 @@ public class OptionsFragment extends Fragment {
         }
         binding.minAge.setText(preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+"");
         binding.maxAge.setText(preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)+"");
-
-
     }
     private void setListeners(){
         binding.done.setOnClickListener(v ->{
@@ -114,8 +100,6 @@ public class OptionsFragment extends Fragment {
                     break;
                     default: break;
                 }
-
-                makeToast(preferencesManager.getString(Constants.KEY_SEARCH_GENDER));
             }
         }
         );
