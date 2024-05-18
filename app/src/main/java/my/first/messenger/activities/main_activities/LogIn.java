@@ -28,7 +28,6 @@ public class LogIn extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 
-        // initializing classes
         preferencesManager = new PreferencesManager(getApplicationContext());
         user = new User();
         database = FirebaseFirestore.getInstance();
@@ -69,7 +68,6 @@ public class LogIn extends AppCompatActivity {
         });
     }
 
-    // check if user exist in database
     private void checkUser(String user_email, String user_password) {
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .whereEqualTo(Constants.KEY_EMAIL, binding.email.getText().toString())
