@@ -28,6 +28,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
     private FragmentActivatedUsersBinding binding;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private PreferencesManager preferencesManager;
+    private FirebaseFirestore database;
     private final String TAG ="ActiveUsersFragment";
 
     public ActivatedUsersFragment() {
@@ -56,6 +57,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
     }
     private void init(){
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        database = FirebaseFirestore.getInstance();
     }
     private void setListeners(){
         binding.back.setOnClickListener(v->{
@@ -69,7 +71,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
         binding.swipeRefreshLayout.setOnRefreshListener(this::getMeetingUsers);
     }
     private void getMeetingUsers(){
-        FirebaseFirestore database= FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
                 .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
                 .get()
@@ -118,7 +119,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
         }
     @Override
     public void onUserClick(User user) {
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .document(user.id)
                 .get()

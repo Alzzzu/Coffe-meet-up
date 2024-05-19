@@ -139,18 +139,23 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                 .addOnFailureListener(e -> makeToast("Failed token"));
     }
     private void signOut() {
-        deleteActivation(database, preferencesManager);
-        deleteVisits(database, preferencesManager);
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .document(preferencesManager.getString(Constants.KEY_USER_ID))
-                .update(Constants.KEY_AVAILABILITY, 0);
-        DocumentReference documentReference =
-                    database.collection(Constants.KEY_COLLECTION_USERS).document(preferencesManager.getString(Constants.KEY_USER_ID)
-                    );
+        if (preferencesManager.getBoolean(Constants.KEY_IS_GOING)||preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)||preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
+            try {
+                deleteActivation(database, preferencesManager);
+                deleteVisits(database, preferencesManager);
+            }
+            catch (Exception e){
+            }
+        }
+        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferencesManager.getString(Constants.KEY_USER_ID));
             HashMap<String, Object> updates = new HashMap<>();
             updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
+            updates.put(Constants.KEY_AVAILABILITY, 0);
             documentReference.update(updates)
                     .addOnSuccessListener(unused -> {
+                        preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                        preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                        preferencesManager.putBoolean(Constants.KEY_IS_VISITED, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, false);
                         startActivity(new Intent(getApplicationContext(), LogIn.class));
                         finish();

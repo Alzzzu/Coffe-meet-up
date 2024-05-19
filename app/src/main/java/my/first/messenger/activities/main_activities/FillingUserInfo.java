@@ -101,7 +101,6 @@ public class FillingUserInfo extends AppCompatActivity {
                                     user.name =binding.name.getText().toString();
                                     user.image=encodedImage;
                                     user.age = binding.age.getText().toString();
-                                    makeToast(url+user.age);
                                     uploadImage(url,"0", documentReference.getId());
                                 })
                .addOnFailureListener(exception -> {
@@ -172,12 +171,9 @@ public class FillingUserInfo extends AppCompatActivity {
                 @Override
                 public void onCheckedChanged(RadioGroup group, int checkedId) {
                     if (checkedId == R.id.M) {
-                        makeToast("M");
                         gender = "M";
-                        makeToast(gender);
                     } else if (checkedId == R.id.F) {
                         gender = "F";
-                        makeToast(gender);
                     }
                 }
             });
@@ -188,7 +184,7 @@ public class FillingUserInfo extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK) {
                 if (result.getData() != null) {
                     url = result.getData().getData();
-                          Glide.with(getApplicationContext()).load(url).into(binding.profilePicture);
+                    Glide.with(getApplicationContext()).load(url).into(binding.profilePicture);
                     try {
                         InputStream inputStream = getContentResolver().openInputStream(url);
                         BitmapFactory.Options options = new BitmapFactory.Options();

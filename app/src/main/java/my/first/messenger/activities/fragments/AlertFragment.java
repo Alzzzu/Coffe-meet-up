@@ -27,12 +27,14 @@ public class AlertFragment extends DialogFragment {
     private String type;
     private String ID;
     private PreferencesManager preferencesManager;
+    private FirebaseFirestore database;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         type = getArguments().getString("type");
         ID = getArguments().getString("id");
         preferencesManager = new PreferencesManager(getActivity());
+        database = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -48,8 +50,6 @@ public class AlertFragment extends DialogFragment {
                             preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                             preferencesManager.putString(Constants.KEY_VISITED_ID,"");
                             preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
-
-                            FirebaseFirestore database = FirebaseFirestore.getInstance();
 
                             database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(ID)
                                     .update("activated", false);
@@ -87,7 +87,6 @@ public class AlertFragment extends DialogFragment {
                     .setPositiveButton("Да", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
 
-                            FirebaseFirestore database = FirebaseFirestore.getInstance();
                             database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS)
                                     .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
                                     .get()
@@ -153,7 +152,6 @@ public class AlertFragment extends DialogFragment {
                         }
                     });
             return builder.create();
-
         }
     }
 }
