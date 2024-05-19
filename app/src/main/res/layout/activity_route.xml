@@ -34,20 +34,6 @@
         android:layout_marginTop="@dimen/_20sdp"
         android:textSize="@dimen/_25sdp"/>
 
-
-        <Button
-            android:id="@+id/finish"
-            android:layout_width="@dimen/_130sdp"
-            android:layout_height="@dimen/_40sdp"
-            android:textSize="@dimen/_15sdp"
-            android:alpha="0.6"
-            android:backgroundTint="@color/caramel"
-            android:layout_alignBottom="@id/bottom_navigation"
-            android:layout_alignParentEnd="true"
-            android:layout_marginBottom="@dimen/_40sdp"
-            android:text="Завершить"
-            android:visibility="gone"/>
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"

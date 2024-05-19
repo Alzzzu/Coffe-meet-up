@@ -60,8 +60,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FirebaseMessaging.getInstance().setAutoInitEnabled(true);
-
-
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         init();
@@ -116,7 +114,6 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
                 makeToast(t.getMessage());
             }
         });
-
     }
     private void sendLocation(){
         HashMap<String, Object> message = new HashMap<>();
@@ -129,7 +126,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
         binding.layoutSendLocation.setVisibility(View.GONE);
         if (conversationId != null) {
-            updateConversation(binding.inputMessage.getText().toString());
+            updateConversation(Objects.equals(binding.inputMessage.getText().toString(), "")?"LOCATION ☕":binding.inputMessage.getText().toString());
         } else {
             HashMap<String, Object> conversation = new HashMap<>();
             conversation.put(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID));

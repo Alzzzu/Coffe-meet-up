@@ -81,22 +81,18 @@ public class RouteActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         Log.d(TAG, "strivt avtivated");
         binding = ActivityRouteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Classes
         preferencesManager = new PreferencesManager(getApplicationContext());
         init();
         Log.d(TAG, "initialized");
         locationUpdates();
         settingMap();
         Log.d(TAG, "map set");
-
         setListeners();
-
     }
 
     private void init() {
@@ -108,31 +104,22 @@ public class RouteActivity extends AppCompatActivity {
             database.collection(Constants.KEY_COLLECTION_VISITS)
                     .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
                      .addSnapshotListener(eventListener);
-        }
-        if (!preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")) {
-            binding.finish.setVisibility(View.GONE);
-        }
+            }
         }
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
-
         if (error != null) {
             makeToast(error.getMessage());
         }
-
         if (value != null) {
-
             for(DocumentChange documentChange: value.getDocumentChanges()){
 
                 if (documentChange.getType() == DocumentChange.Type.REMOVED){
-
                     preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                     preferencesManager.putString(Constants.KEY_VISITED_ID, "");
                     preferencesManager.putString(Constants.KEY_VISITOR_ID, "");
-
                     showNotification("Вас забулили!",documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME)+ " отменил(а) встречу");
                     Intent intent = new Intent(getApplicationContext(), MapActivity.class);
                     startActivity(intent);
-
                 }
             }
         }
@@ -154,14 +141,12 @@ public class RouteActivity extends AppCompatActivity {
         this.mLocationOverlay.enableFollowLocation();
         map.getOverlays().add(this.mLocationOverlay);
         Log.d(TAG,"MAP SET");
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
                         double lng = task.getResult().getDouble("longitude");
                         double lat = task.getResult().getDouble("latitude");
                         coffeeshopLoc = new GeoPoint(lat, lng);
-
                         Marker marker = new Marker(map);
                         marker.setPosition(new GeoPoint(lat, lng));
                         map.getOverlays().add(marker);
@@ -169,7 +154,6 @@ public class RouteActivity extends AppCompatActivity {
                         map.getOverlays().add(marker);
                         marker.setIcon(getResources().getDrawable(R.mipmap.map_icon_2));
                         marker.setTitle(task.getResult().getString(Constants.KEY_ADDRESS));
-
                         preferencesManager.putString(Constants.KEY_COFFEESHOP_LONGITUDE, lng+"");
                         preferencesManager.putString(Constants.KEY_COFFEESHOP_LATITUDE, lat+"");
                         try{
@@ -178,11 +162,8 @@ public class RouteActivity extends AppCompatActivity {
                         catch(Exception e){
                             makeToast(e.getMessage());
                         }
-
                     }
-
                 });
-
     }
 
     private void setListeners() {
@@ -194,30 +175,10 @@ public class RouteActivity extends AppCompatActivity {
             frag.setArguments(bundle);
             FragmentManager manager = getSupportFragmentManager();
             frag.show(manager, "dialog");
-
-            if (0>1){
-            }
-
-        });
-
-        binding.finish.setOnClickListener(v -> {
-            // AlertFragment alert = new AlertFragment();
-            Log.d(TAG,"starting check");
-            if (distance(coffeeshopLoc.getLatitude(), coffeeshopLoc.getLongitude(), parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))) < 0.2) {
-                if(preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
-                preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                Intent i = new Intent(getApplicationContext(), ActivatedActivity.class);
-                startActivity(i);
-                finish();
-                }
-            } else {
-                makeToast("Чтобы завершить путь необходимо достигнуть точку");
-            }
         });
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
                 if (item.getItemId() == R.id.profile) {
                     Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     User user = new User();
@@ -245,7 +206,6 @@ public class RouteActivity extends AppCompatActivity {
         });
     }
 
-
     private void routing(double lat, double lng) {
         new Thread() {
             public void run() {
@@ -253,8 +213,6 @@ public class RouteActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d(TAG,"ROUTE STARTED");
-
-                        //  GeoPoint g = new GeoPoint(new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
                         try {
                             RoadManager roadManager = new OSRMRoadManager(getApplicationContext(), "coffeeshopperhere");
                             if (roadManager == null) {
@@ -267,8 +225,6 @@ public class RouteActivity extends AppCompatActivity {
                                 waypoints.add(new GeoPoint(lat, lng));
                                 ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT);
                                 Log.d(TAG, "ROUTE STARTED2");
-
-
                                 Road road = roadManager.getRoad(waypoints);
                                 Log.d(TAG, "ROUTE STARTED3");
 
@@ -283,9 +239,7 @@ public class RouteActivity extends AppCompatActivity {
                         }
                         catch(Exception e){
                             Log.d(TAG, e.getMessage());
-
                         }
-
                     }
                 });
             }
@@ -294,12 +248,10 @@ public class RouteActivity extends AppCompatActivity {
     private void makeToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
-
     @Override
     protected void onPause() {
         super.onPause();
     }
-
      void showNotification(String title, String message) {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -316,10 +268,6 @@ public class RouteActivity extends AppCompatActivity {
                 .setContentText(message)
                 .setAutoCancel(true);
     }
-    private void removing() {
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
-
     public void locationUpdates(){
         try{
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -332,7 +280,6 @@ public class RouteActivity extends AppCompatActivity {
             locationRequest.setInterval(100);
             locationRequest.setFastestInterval(50);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
             LocationCallback locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -362,12 +309,8 @@ public class RouteActivity extends AppCompatActivity {
                                     preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                                     preferencesManager.putString(Constants.KEY_VISITED_ID,"");
                                     preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
-
-                                    FirebaseFirestore database = FirebaseFirestore.getInstance();
-
                                     database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                             .update("activated", false);
-
                                     database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                             .collection(Constants.KEY_COLLECTION_USERS)
                                             .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
@@ -380,8 +323,6 @@ public class RouteActivity extends AppCompatActivity {
                                                 }
                                             });
                                     fusedLocationProviderClient.removeLocationUpdates(this);
-
-
                                     Intent i = new Intent(getApplicationContext(), MapActivity.class);
                                     startActivity(i);
 
@@ -391,12 +332,7 @@ public class RouteActivity extends AppCompatActivity {
                             preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
                             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
 
-                            FirebaseFirestore database = FirebaseFirestore.getInstance();
-
-                            if(!preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
-                                // deleteVisits(database, preferencesManager);
-                            }
-                            else{
+                            if(preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
                                 database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
                                         .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
                                         .collection(Constants.KEY_COLLECTION_USERS)
@@ -408,18 +344,15 @@ public class RouteActivity extends AppCompatActivity {
                     else{
 
                         preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                        db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                 .update("activated", false);
 
-                        db.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                 .collection(Constants.KEY_COLLECTION_USERS)
                                 .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
 
                         Intent i = new Intent(getApplicationContext(), MapActivity.class);
                         startActivity(i);
-
                     }
                 }
 

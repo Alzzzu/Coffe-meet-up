@@ -18,7 +18,6 @@ import my.first.messenger.databinding.ItemContainerReceivedMessageBinding;
 import my.first.messenger.databinding.ItemContainerSentMessageBinding;
 
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-    //private final Bitmap receiverProfileImage;
     private List<ChatMessage> chatMessages;
     private final String senderId;
     private int focusedItem = 0;
@@ -52,7 +51,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if(getItemViewType(position)==VIEW_TYPE_SENT){
-            //  holder.itemView.setSelected(focusedItem == position);
             ((SentMessageViewHolder)holder).setData(chatMessages.get(position));
 
         } else{
@@ -86,7 +84,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         void setData(ChatMessage chatMessage) {
             if(chatMessage.type.equals("location")){
-                binding.textMessageSent.setText("LOCATION");
+                binding.textMessageSent.setText("LOCATION ☕");
                 binding.textMessageSent.setGravity(Gravity.CENTER_HORIZONTAL);
                 binding.textMessageSent.setBackground(ContextCompat.getDrawable(binding.textMessageSent.getContext(), R.drawable.location_background));
 

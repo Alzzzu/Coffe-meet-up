@@ -6,6 +6,7 @@ import static my.first.messenger.activities.utils.Functions.deleteVisits;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,6 +62,7 @@ import my.first.messenger.databinding.ActivityProfileBinding;
 
     private Boolean clicked;
     private Image image;
+    private final String TAG ="ProfileActivityTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +135,7 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                 preferencesManager.getString(Constants.KEY_USER_ID)
         );
         documentReference.update(Constants.KEY_FCM_TOKEN, token)
-                .addOnSuccessListener(unused->makeToast("Token changed"))
+                .addOnSuccessListener(unused-> Log.d(TAG, "Token Changed"))
                 .addOnFailureListener(e -> makeToast("Failed token"));
     }
     private void signOut() {
