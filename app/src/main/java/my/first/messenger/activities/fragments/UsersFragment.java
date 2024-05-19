@@ -68,10 +68,10 @@ public class UsersFragment extends Fragment implements UsersListener {
           binding.imageBack.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-                    .replace(R.id.fragment_container_view, options)
-                    .addToBackStack(null)
-                    .commit();
+                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                .replace(R.id.fragment_container_view, options)
+                .addToBackStack(null)
+                .commit();
         });
     }
     private void getActiveUsers(){
@@ -93,45 +93,43 @@ public class UsersFragment extends Fragment implements UsersListener {
                             if(1>distance(parseDouble(preferenceManager.getString(Constants.KEY_USER_LATITUDE)),parseDouble(preferenceManager.getString(Constants.KEY_USER_LONGITUDE)),lat, lng)){
                                 coffeeShopCounter +=1;
                                 database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                                        .document(queryDocumentSnapshot.getId())
-                                        .collection(Constants.KEY_COLLECTION_USERS)
-                                        .whereEqualTo("status", "active")
-                                        .get()
-                                        .addOnCompleteListener(task2 -> {
-                                            if(task2.isSuccessful()&&task2.getResult()!=null){
-
-                                                for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
-                                                    if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
-                                                                   &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
-                                               && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferenceManager.getString(Constants.KEY_SEARCH_GENDER))) {
-                                                        User user = new User();
-                                                        user.id=queryDocumentSnapshot2.getString(Constants.KEY_USER_ID);
-                                                        user.name=queryDocumentSnapshot2.getString(Constants.KEY_NAME);
-                                                        user.image=queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
-                                                        user.age=queryDocumentSnapshot2.getLong(Constants.KEY_AGE).toString();
-                                                        users.add(user);
-                                                        userAdapter.notifyDataSetChanged();
-
-                                                    }
-                                                }
-                                                if (users.size()>0) {
-                                                    userAdapter = new UserAdapter(users, this);
-                                                    binding.usersRecycleView.setAdapter(userAdapter);
-                                                    binding.usersRecycleView.setVisibility(View.VISIBLE);
-                                                    binding.swipeRefreshLayout.setRefreshing(false);
-                                                    binding.progress.setVisibility(View.GONE);
-                                                    binding.loading.setVisibility(View.GONE);
-                                                    binding.noUsers.setVisibility(View.GONE);
-                                                }
-                                                else{
-                                                    binding.noUsers.setVisibility(View.VISIBLE);
-                                                    binding.progress.setVisibility(View.GONE);
-                                                    binding.swipeRefreshLayout.setRefreshing(false);
-                                                    binding.loading.setText("Пользователи по запросу не найдены");
+                                    .document(queryDocumentSnapshot.getId())
+                                    .collection(Constants.KEY_COLLECTION_USERS)
+                                    .whereEqualTo("status", "active")
+                                    .get()
+                                    .addOnCompleteListener(task2 -> {
+                                        if(task2.isSuccessful()&&task2.getResult()!=null){
+                                            for(QueryDocumentSnapshot queryDocumentSnapshot2 : task2.getResult()){
+                                                if (queryDocumentSnapshot2.getLong(Constants.KEY_AGE)<=preferenceManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
+                                                    &&queryDocumentSnapshot2.getLong(Constants.KEY_AGE)>=preferenceManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
+                                                    && !queryDocumentSnapshot2.getString(Constants.KEY_GENDER).equals(preferenceManager.getString(Constants.KEY_SEARCH_GENDER))) {
+                                                    User user = new User();
+                                                    user.id=queryDocumentSnapshot2.getString(Constants.KEY_USER_ID);
+                                                    user.name=queryDocumentSnapshot2.getString(Constants.KEY_NAME);
+                                                    user.image=queryDocumentSnapshot2.getString(Constants.KEY_IMAGE);
+                                                    user.age=queryDocumentSnapshot2.getLong(Constants.KEY_AGE).toString();
+                                                    users.add(user);
+                                                    userAdapter.notifyDataSetChanged();
                                                 }
                                             }
-                                        });
-                                    }
+                                            if (users.size()>0) {
+                                                userAdapter = new UserAdapter(users, this);
+                                                binding.usersRecycleView.setAdapter(userAdapter);
+                                                binding.usersRecycleView.setVisibility(View.VISIBLE);
+                                                binding.swipeRefreshLayout.setRefreshing(false);
+                                                binding.progress.setVisibility(View.GONE);
+                                                binding.loading.setVisibility(View.GONE);
+                                                binding.noUsers.setVisibility(View.GONE);
+                                            }
+                                            else{
+                                                binding.noUsers.setVisibility(View.VISIBLE);
+                                                binding.progress.setVisibility(View.GONE);
+                                                binding.swipeRefreshLayout.setRefreshing(false);
+                                                binding.loading.setText("Пользователи по запросу не найдены");
+                                            }
+                                        }
+                                    });
+                                }
                              }
                         if (coffeeShopCounter==0){
                             binding.noUsers.setVisibility(View.VISIBLE);
@@ -156,19 +154,19 @@ public class UsersFragment extends Fragment implements UsersListener {
         Bundle bundle = new Bundle();
         FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USERS).document(user.id).get()
-                .addOnCompleteListener(task->{
-                    DocumentSnapshot documentSnapshot = task.getResult();
-                    user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
-                    user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
-                    user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
-                    bundle.putSerializable(Constants.KEY_USER, user);
-                    bundle.putBoolean("visitor", true);
-                    ProfileFragment frag = new ProfileFragment();
-                    frag.setArguments(bundle);
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-                            .add(R.id.fragment_container_view, frag).commit();
-                });
+            .addOnCompleteListener(task->{
+                DocumentSnapshot documentSnapshot = task.getResult();
+                user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
+                user.hobby = documentSnapshot.getString(Constants.KEY_HOBBIES);
+                user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
+                bundle.putSerializable(Constants.KEY_USER, user);
+                bundle.putBoolean("visitor", true);
+                ProfileFragment frag = new ProfileFragment();
+                frag.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                        .add(R.id.fragment_container_view, frag).commit();
+            });
         }
     public void makeToast(String message){
         Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();

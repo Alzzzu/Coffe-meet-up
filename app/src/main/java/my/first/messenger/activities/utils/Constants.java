@@ -85,8 +85,7 @@ public class Constants {
     public static final String KEY_SEARCH_MAX_AGE="maxAge";
     public static final String KEY_SEARCH_GENDER="searchedGender";
     public static final String KEY_SEARCH_MIN_AGE="minAge";
-    public static final String KEY_SEARCH_FOR_COWORKING="coworking";
-    public static final String KEY_SEARCH_FOR_MEETING="meeting";
+    public static final String KEY_SEARCH_PURPOSE="searchedPurpose";
 
 
 

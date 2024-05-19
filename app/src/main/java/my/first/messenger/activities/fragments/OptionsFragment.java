@@ -60,6 +60,16 @@ public class OptionsFragment extends Fragment {
             break;
             default: break;
         }
+        switch(preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE)){
+            case "C": binding.meeting.setChecked(true);
+                break;
+            case "M":binding.coworking.setChecked(true);
+                break;
+            case "BOTH":binding.meeting.setChecked(true);
+                binding.coworking.setChecked(true);
+                break;
+            default: break;
+        }
         binding.minAge.setText(preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)+"");
         binding.maxAge.setText(preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)+"");
     }
@@ -74,7 +84,6 @@ public class OptionsFragment extends Fragment {
                             .replace(R.id.fragment_container_view, activatedUsers)
                             .addToBackStack(null)
                             .commit();
-
                 }
                 else{
                 UsersFragment users = new UsersFragment();
@@ -117,23 +126,40 @@ public class OptionsFragment extends Fragment {
                         break;
                     default: break;
                 }
-
-
-
             }
         }
         );
         binding.coworking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                preferencesManager.putBoolean(Constants.KEY_SEARCH_FOR_COWORKING, !preferencesManager.getBoolean(Constants.KEY_SEARCH_FOR_COWORKING));
-            }
-        }
+          @Override
+          public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+              switch (preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE)){
+                  case "C": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "BOTH");
+                      break;
+                  case "M": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, null);
+                      break;
+                  case "": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "M");
+                      break;
+                  case "BOTH":preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE,"C");
+                      break;
+                  default: break;
+              }
+          }
+      }
         );
         binding.meeting.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                preferencesManager.putBoolean(Constants.KEY_SEARCH_FOR_MEETING, !preferencesManager.getBoolean(Constants.KEY_SEARCH_FOR_MEETING));
+                switch (preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE)){
+                    case "M": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "BOTH");
+                    break;
+                    case "C": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "");
+                    break;
+                    case "": preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "C");
+                    break;
+                    case "BOTH":preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE,"M");
+                    break;
+                    default: break;
+                }
             }
         }
         );

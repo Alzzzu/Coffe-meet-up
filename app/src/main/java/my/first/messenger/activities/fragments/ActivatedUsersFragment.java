@@ -24,7 +24,6 @@ import my.first.messenger.activities.models.User;
 import my.first.messenger.activities.utils.Constants;
 import my.first.messenger.activities.utils.PreferencesManager;
 import my.first.messenger.databinding.FragmentActivatedUsersBinding;
-
 public class ActivatedUsersFragment extends Fragment implements UsersListener {
     private FragmentActivatedUsersBinding binding;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -37,7 +36,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
         ActivatedUsersFragment fragment = new ActivatedUsersFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
-
         return fragment;
     }
     @Override
@@ -83,7 +81,10 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                             if(queryDocumentSnapshot.getLong(Constants.KEY_AGE)>=preferencesManager.getLong(Constants.KEY_SEARCH_MIN_AGE)
                             &&queryDocumentSnapshot.getLong(Constants.KEY_AGE)<=preferencesManager.getLong(Constants.KEY_SEARCH_MAX_AGE)
-                            &&!queryDocumentSnapshot.getString(Constants.KEY_GENDER).equals(preferencesManager.getString(Constants.KEY_SEARCH_GENDER))){
+                            &&!queryDocumentSnapshot.getString(Constants.KEY_GENDER).equals(preferencesManager.getString(Constants.KEY_SEARCH_GENDER))
+                            &&(queryDocumentSnapshot.getString(Constants.KEY_SEARCH_PURPOSE).equals(preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE))
+                            ||("BOTH").equals(preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE)))
+                            ){
                                 User user = new User();
                                 user.id = queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID);
                                 user.name =queryDocumentSnapshot.getString(Constants.KEY_VISITOR_NAME);
@@ -115,7 +116,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                     }
                 });
         }
-
     @Override
     public void onUserClick(User user) {
         FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -137,7 +137,6 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         ProfileFragment frag = new ProfileFragment();
                         frag.setArguments(bundle);
                         getActivity().getSupportFragmentManager().beginTransaction().add(R.id.fragment_container_view, frag).commit();
-
                     }
                 });
             }

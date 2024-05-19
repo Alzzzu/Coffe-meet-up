@@ -128,27 +128,28 @@ public class ProfileFragment extends Fragment {
             if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
                 database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                        .get()
-                        .addOnCompleteListener(task->{
-                                    int count=0;
-                                    for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
-                                        count+=1;
-                                    }
-                                    if(count==0){
-                                        HashMap<String, Object> updt = new HashMap<>();
-                                        updt.put(Constants.KEY_VISITED_IMAGE, user.image);
-                                        updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
-                                        updt.put(Constants.KEY_VISITED_ID, user.id);
-                                        updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
-                                        updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
-                                        updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
-                                        updt.put(Constants.KEY_VISITED_NAME, user.name);
-                                        updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
-                                        database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
-                                        makeToast("запрос отправлен");
-                                    }
-                                }
-                        );
+                    .get()
+                    .addOnCompleteListener(task->{
+                        int count=0;
+                        for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                            count+=1;
+                        }
+                        if(count==0){
+                            HashMap<String, Object> updt = new HashMap<>();
+                            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+                            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
+                            updt.put(Constants.KEY_VISITED_ID, user.id);
+                            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
+                            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
+                            updt.put(Constants.KEY_SEARCH_PURPOSE, preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE));
+                            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+                            updt.put(Constants.KEY_VISITED_NAME, user.name);
+                            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
+                            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+                            makeToast("запрос отправлен");
+                        }
+                    }
+                );
                 }
             else{
                 preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
@@ -157,13 +158,11 @@ public class ProfileFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
         binding.imageBack.setOnClickListener(v-> {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.anim.slide_in_left,
                     android.R.anim.slide_out_right).remove(this).commit();}
-        );
-
+            );
         binding.showInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
