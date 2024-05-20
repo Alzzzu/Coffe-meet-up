@@ -157,6 +157,10 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                         preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_VISITED, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, false);
+                        preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "");
+                        preferencesManager.putString(Constants.KEY_SEARCH_GENDER, "");
+                        preferencesManager.putLong(Constants.KEY_SEARCH_MIN_AGE, 0);
+                        preferencesManager.putLong(Constants.KEY_SEARCH_MAX_AGE, 0);
                         startActivity(new Intent(getApplicationContext(), LogIn.class));
                         finish();
                     })

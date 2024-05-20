@@ -297,7 +297,6 @@ public class RouteActivity extends AppCompatActivity {
                                     database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                             .collection(Constants.KEY_COLLECTION_USERS)
                                             .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
-
                                     preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
                                     preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                                     fusedLocationProviderClient.removeLocationUpdates(this);

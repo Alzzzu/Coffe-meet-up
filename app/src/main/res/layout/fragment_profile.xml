@@ -166,6 +166,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/ic_bubble"
+
         android:backgroundTint="@color/whipped_cream"
         app:tint="@color/coffee"
         android:elevation="10dp"
