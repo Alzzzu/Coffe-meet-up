@@ -26,39 +26,15 @@ public class LogIn extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         preferencesManager = new PreferencesManager(getApplicationContext());
         user = new User();
         database = FirebaseFirestore.getInstance();
-
-          if(preferencesManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
-            Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
-              user.id =  preferencesManager.getString(Constants.KEY_USER_ID);
-              user.about = preferencesManager.getString(Constants.KEY_ABOUT);
-              user.hobby = preferencesManager.getString(Constants.KEY_HOBBIES);
-              user.name = preferencesManager.getString(Constants.KEY_NAME);
-              user.age = preferencesManager.getString(Constants.KEY_AGE);
-              user.gender = preferencesManager.getString(Constants.KEY_GENDER);
-              user.image = preferencesManager.getString(Constants.KEY_IMAGE);
-              database.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID,user.id)
-                  .get().addOnCompleteListener(task->{
-                      for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                          preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
-                          preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
-                          preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
-                      }
-                  });
-            i.putExtra(Constants.KEY_USER, user);
-            startActivity(i);
-            finish();
-        }
-
+        checkIfSignedIn();
         binding = LoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setListeners();
     }
-        private void setListeners(){
+    private void setListeners(){
         binding.login.setOnClickListener(v-> {
             checkUser(binding.email.getText().toString(), binding.password.getText().toString());
         });
@@ -66,6 +42,29 @@ public class LogIn extends AppCompatActivity {
             Intent i = new Intent(LogIn.this, SignUp.class);
             startActivity(i);
         });
+    }
+    private void checkIfSignedIn() {
+        if (preferencesManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
+            Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+            user.id = preferencesManager.getString(Constants.KEY_USER_ID);
+            user.about = preferencesManager.getString(Constants.KEY_ABOUT);
+            user.hobby = preferencesManager.getString(Constants.KEY_HOBBIES);
+            user.name = preferencesManager.getString(Constants.KEY_NAME);
+            user.age = preferencesManager.getString(Constants.KEY_AGE);
+            user.gender = preferencesManager.getString(Constants.KEY_GENDER);
+            user.image = preferencesManager.getString(Constants.KEY_IMAGE);
+            database.collection(Constants.KEY_COLLECTION_VISITS).whereEqualTo(Constants.KEY_VISITED_ID, user.id)
+                    .get().addOnCompleteListener(task -> {
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
+                            preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
+                            preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
+                        }
+                    });
+            i.putExtra(Constants.KEY_USER, user);
+            startActivity(i);
+            finish();
+        }
     }
 
     private void checkUser(String user_email, String user_password) {
@@ -76,25 +75,32 @@ public class LogIn extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
                         DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                        preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
-                        preferencesManager.putString(Constants.KEY_USER_ID, documentSnapshot.getId());
-                        preferencesManager.putString(Constants.KEY_NAME, documentSnapshot.getString(Constants.KEY_NAME));
-                        preferencesManager.putString(Constants.KEY_AGE, ((documentSnapshot.getLong(Constants.KEY_AGE)).toString()));
-                        preferencesManager.putString(Constants.KEY_HOBBIES, documentSnapshot.getString(Constants.KEY_HOBBIES));
-                        preferencesManager.putString(Constants.KEY_ABOUT, documentSnapshot.getString(Constants.KEY_ABOUT));
-                        preferencesManager.putString(Constants.KEY_GENDER, documentSnapshot.getString(Constants.KEY_GENDER));
-                        preferencesManager.putString(Constants.KEY_IMAGE, documentSnapshot.getString(Constants.KEY_IMAGE));
-                        user.id =  documentSnapshot.getId();
-                        user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
-                        user.hobby =documentSnapshot.getString(Constants.KEY_HOBBIES);
-                        user.name =documentSnapshot.getString(Constants.KEY_NAME);
-                        user.gender =documentSnapshot.getString(Constants.KEY_GENDER);
-                        user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
-                        user.image =documentSnapshot.getString(Constants.KEY_IMAGE);
-                        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                        intent.putExtra(Constants.KEY_USER, user);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
+                        if (Boolean.FALSE.equals(documentSnapshot.getBoolean(Constants.KEY_IS_SIGNED_IN))){
+                            database.collection(Constants.KEY_COLLECTION_USERS).document(task.getResult().getDocuments().get(0).getId()).update(Constants.KEY_IS_SIGNED_IN, true);
+                            preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
+                            preferencesManager.putString(Constants.KEY_USER_ID, documentSnapshot.getId());
+                            preferencesManager.putString(Constants.KEY_NAME, documentSnapshot.getString(Constants.KEY_NAME));
+                            preferencesManager.putString(Constants.KEY_AGE, (documentSnapshot.getLong(Constants.KEY_AGE)+""));
+                            preferencesManager.putString(Constants.KEY_HOBBIES, documentSnapshot.getString(Constants.KEY_HOBBIES));
+                            preferencesManager.putString(Constants.KEY_ABOUT, documentSnapshot.getString(Constants.KEY_ABOUT));
+                            preferencesManager.putString(Constants.KEY_GENDER, documentSnapshot.getString(Constants.KEY_GENDER));
+                            preferencesManager.putString(Constants.KEY_IMAGE, documentSnapshot.getString(Constants.KEY_IMAGE));
+                            user.id =  documentSnapshot.getId();
+                            user.about = documentSnapshot.getString(Constants.KEY_ABOUT);
+                            user.hobby =documentSnapshot.getString(Constants.KEY_HOBBIES);
+                            user.name =documentSnapshot.getString(Constants.KEY_NAME);
+                            user.gender =documentSnapshot.getString(Constants.KEY_GENDER);
+                            user.age = documentSnapshot.getLong(Constants.KEY_AGE).toString();
+                            user.image =documentSnapshot.getString(Constants.KEY_IMAGE);
+                            Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                            intent.putExtra(Constants.KEY_USER, user);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                        }
+                        else {
+                            binding.incorrect.setVisibility(View.VISIBLE);
+                            binding.incorrect.setText("Этот аккаунт уже в сети");
+                        }
                     }
                     else {
                         makeToast("Не можем найти пользователя");
@@ -105,5 +111,4 @@ public class LogIn extends AppCompatActivity {
     public void makeToast(String message){
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
     }
-
 }

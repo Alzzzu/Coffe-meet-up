@@ -1,126 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/parameters_setting"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:visibility="visible"
-    android:background="@color/whipped_cream"
+    android:background="@color/caramel"
     tools:context=".activities.fragments.OptionsFragment">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Параметры поиска"
-        android:gravity="center"
-        android:textSize="@dimen/_30ssp"
-        android:fontFamily="@font/russ"
-        />
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/done"
-        android:layout_width="@dimen/_25sdp"
-        android:layout_height="@dimen/_25sdp"
-        android:src="@drawable/done"
-        android:tint="@color/coffee"
-
-        android:layout_gravity="right"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Зачем хотите встретиться?"
-        android:fontFamily="@font/russ3"
-        android:textSize="@dimen/_15ssp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        />
-
-    <CheckBox
-        android:id="@+id/meeting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Знакомства"
-        android:fontFamily="@font/russ3"
-        android:layout_marginLeft="@dimen/_5sdp"
-        />
-
-    <CheckBox
-        android:id="@+id/coworking"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Коворкинг"
-        android:fontFamily="@font/russ3"
-        android:layout_marginLeft="@dimen/_5sdp"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Выберите желаемые признаки"
-        android:textSize="@dimen/_15ssp"
-        android:fontFamily="@font/russ3"
-
-        android:layout_marginLeft="@dimen/_5sdp"
-
-        />
-    <CheckBox
-        android:id="@+id/male"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/male"
-        android:fontFamily="@font/russ3"
-        android:layout_marginLeft="@dimen/_5sdp"/>
-
-    <CheckBox
-        android:id="@+id/female"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/female"
-        android:fontFamily="@font/russ3"
-        android:layout_marginLeft="@dimen/_5sdp"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="возраст"
-        android:textSize="@dimen/_15ssp"
-        android:fontFamily="@font/russ3"
-        android:layout_marginLeft="@dimen/_5sdp"
-        />
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-
-        android:layout_marginLeft="@dimen/_5sdp">
         <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_38sdp"
+            android:textSize="@dimen/_23ssp"
+            android:fontFamily="@font/num3"
+            android:gravity="center"
+            android:text="@string/name"
+            android:textColor="@color/white"
+            android:layout_marginBottom="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_5sdp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/for_profile_2"
+            android:gravity="center"
+            android:layout_below="@id/title" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/done"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:src="@drawable/done"
+            android:tint="@color/coffee"
+            android:layout_gravity="right"
+            android:layout_below="@+id/title"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_7sdp"
+            android:layout_alignEnd="@id/title"/>
+        <TextView
+            android:id="@+id/parameters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="от"
-            android:fontFamily="@font/russ3"
-            android:textSize="@dimen/_15ssp"
-            android:layout_marginRight="@dimen/_5sdp" />
-        <EditText
-            android:id="@+id/min_age"
-            android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:textSize="@dimen/_15ssp"
-            android:inputType="number"
+            android:layout_below="@id/title"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_30sdp"
+            android:layout_marginEnd="@dimen/_5sdp"
+            android:layout_marginBottom="@dimen/_10sdp"
+            android:fontFamily="@font/comforta"
             android:gravity="center"
-            android:background="@drawable/background_text_user"
-            android:layout_marginRight="@dimen/_5sdp" />
-        <TextView
+            android:text="Параметры поиска"
+            android:textSize="@dimen/_20ssp" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_below="@id/parameters">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="до"
-            android:fontFamily="@font/russ3"
-            android:layout_marginRight="@dimen/_5sdp"
-            android:textSize="@dimen/_15ssp"/>
-        <EditText
-            android:id="@+id/max_age"
-            android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:textSize="@dimen/_15ssp"
-            android:inputType="number"
-            android:gravity="center"
-            android:background="@drawable/background_text_user"/>
-    </LinearLayout>
-</LinearLayout>
+            android:orientation="vertical"
+            android:background="@drawable/for_profile_2"
+            android:backgroundTint="@color/cream"
+            android:layout_marginBottom="@dimen/_10sdp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Зачем хотите встретиться?"
+                android:fontFamily="@font/comforta"
+                android:textSize="@dimen/_15ssp"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+
+                />
+                <CheckBox
+                    android:id="@+id/meeting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Знакомства"
+                    android:fontFamily="@font/comforta"
+                    android:textSize="@dimen/_12ssp"
+                    android:layout_marginStart="@dimen/_15sdp"/>
+                <CheckBox
+                    android:id="@+id/coworking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Коворкинг"
+                    android:fontFamily="@font/comforta"
+                    android:textSize="@dimen/_12ssp"
+                    android:layout_marginStart="@dimen/_15sdp"
+                    android:layout_marginBottom="@dimen/_10sdp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@drawable/for_profile_2"
+                android:backgroundTint="@color/whipped_cream">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@drawable/line_separator"
+                    android:layout_marginBottom="@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:layout_marginEnd="@dimen/_10sdp"
+                    />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выберите желаемые признаки"
+                android:textSize="@dimen/_15ssp"
+                android:fontFamily="@font/comforta"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/_10sdp" />
+            <CheckBox
+                android:id="@+id/male"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/male"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:fontFamily="@font/comforta"/>
+
+            <CheckBox
+                android:id="@+id/female"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/female"
+                android:textSize="@dimen/_12ssp"
+                android:fontFamily="@font/comforta"
+                android:layout_marginStart="@dimen/_15sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@drawable/for_profile_2">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@drawable/line_separator"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_5sdp"
+                android:fontFamily="@font/comforta"
+                android:gravity="center"
+                android:text="Предпочтительный возраст"
+                android:textSize="@dimen/_15ssp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginStart="@dimen/_20sdp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="от"
+                    android:fontFamily="@font/comforta"
+                    android:textSize="@dimen/_15ssp"
+                    android:layout_marginEnd="@dimen/_5sdp" />
+                <EditText
+                    android:id="@+id/min_age"
+                    android:layout_width="@dimen/_35sdp"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/_15ssp"
+                    android:inputType="number"
+                    android:gravity="center"
+                    android:layout_marginEnd="@dimen/_10sdp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="до"
+                    android:fontFamily="@font/comforta"
+                    android:layout_marginEnd="@dimen/_5sdp"
+                    android:textSize="@dimen/_15ssp"/>
+                <EditText
+                    android:id="@+id/max_age"
+                    android:layout_width="@dimen/_35sdp"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/_15ssp"
+                    android:inputType="number"
+                    android:gravity="center" />
+            </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_20sdp"/>
+            </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

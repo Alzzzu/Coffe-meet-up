@@ -52,11 +52,11 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
         bottomNavigationView.setSelectedItemId(R.id.chat);
         preferencesManager = new PreferencesManager(getApplicationContext());
     }
+
     private void setOnListeners(){
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
                 if (item.getItemId()== R.id.chat){
                     return true;
                 }
@@ -68,22 +68,18 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
                                     preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
                                     preferencesManager.putString(Constants.KEY_VISITOR_ID, queryDocumentSnapshot.getString(Constants.KEY_VISITOR_ID));
                                 }
-
                             });
                     if (preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
                         startActivity(new Intent(getApplicationContext(), ActivatedActivity.class));
                         overridePendingTransition(0,0);
-
                     }
                     else if (preferencesManager.getBoolean(Constants.KEY_IS_GOING)){
                         startActivity(new Intent(getApplicationContext(), RouteActivity.class));
                         overridePendingTransition(0,0);
-
                     }
                     else if(preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
                         startActivity(new Intent(getApplicationContext(), VisitedActivity.class));
                         overridePendingTransition(0,0);
-
                     }
                     else {
                         startActivity(new Intent(getApplicationContext(), UserLocationActivity.class));
@@ -111,6 +107,7 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
             }
         });
     }
+
     private void listenConversations(){
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .whereEqualTo(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
@@ -119,6 +116,7 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, preferencesManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
+
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
             return;
@@ -160,12 +158,12 @@ public class RecentConversationsActivity extends BaseActivity implements RecentC
             binding.conversationsRecycleView.smoothScrollToPosition(0);
         }
     };
+
     @Override
     public void onConversationClick(User user){
         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
         startActivity(intent);
-
         finish();
     }
 

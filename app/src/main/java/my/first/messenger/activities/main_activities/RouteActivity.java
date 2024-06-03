@@ -4,8 +4,6 @@ import static java.lang.Double.parseDouble;
 import static my.first.messenger.activities.utils.Functions.distance;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,7 +21,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -52,6 +49,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import my.first.messenger.R;
@@ -69,29 +67,25 @@ public class RouteActivity extends AppCompatActivity {
     private MapView map;
     private Boolean arrived = true;
     protected IMapController mapController;
-    private FusedLocationProviderClient mFusedLocationClient;
     FusedLocationProviderClient fusedLocationProviderClient;
+    FusedLocationProviderClient fusedLocationProviderClient2;
     private LocationRequest locationRequest;
     private static final String TAG = "ROUTE_ACT";
     private FirebaseFirestore database;
     private MyLocationNewOverlay mLocationOverlay;
     private LocationCallback locationCallback;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        Log.d(TAG, "strivt avtivated");
         binding = ActivityRouteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         preferencesManager = new PreferencesManager(getApplicationContext());
         init();
-        Log.d(TAG, "initialized");
         locationUpdates();
         settingMap();
-        Log.d(TAG, "map set");
         setListeners();
     }
 
@@ -106,65 +100,6 @@ public class RouteActivity extends AppCompatActivity {
                      .addSnapshotListener(eventListener);
             }
         }
-    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
-        if (error != null) {
-            makeToast(error.getMessage());
-        }
-        if (value != null) {
-            for(DocumentChange documentChange: value.getDocumentChanges()){
-
-                if (documentChange.getType() == DocumentChange.Type.REMOVED){
-                    preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                    preferencesManager.putString(Constants.KEY_VISITED_ID, "");
-                    preferencesManager.putString(Constants.KEY_VISITOR_ID, "");
-                    showNotification("Вас забулили!",documentChange.getDocument().getString(Constants.KEY_VISITOR_NAME)+ " отменил(а) встречу");
-                    Intent intent = new Intent(getApplicationContext(), MapActivity.class);
-                    startActivity(intent);
-                }
-            }
-        }
-    };
-    private void settingMap() {
-        Context ctx = getApplicationContext();
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        map = binding.map;
-        map.setMinZoomLevel(15.0);
-        map.setTileSource(TileSourceFactory.MAPNIK);
-        mapController = map.getController();
-        mapController.setZoom(15);
-        map.setBuiltInZoomControls(false);
-        map.setMultiTouchControls(true);
-        mapController.setCenter(userLoc);//new GeoPoint(parseDouble(preferencesManager.getString(Constants.KEY_USER_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_USER_LONGITUDE))));
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx);
-        this.mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
-        this.mLocationOverlay.enableMyLocation();
-        this.mLocationOverlay.enableFollowLocation();
-        map.getOverlays().add(this.mLocationOverlay);
-        Log.d(TAG,"MAP SET");
-        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        double lng = task.getResult().getDouble("longitude");
-                        double lat = task.getResult().getDouble("latitude");
-                        coffeeshopLoc = new GeoPoint(lat, lng);
-                        Marker marker = new Marker(map);
-                        marker.setPosition(new GeoPoint(lat, lng));
-                        map.getOverlays().add(marker);
-                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                        map.getOverlays().add(marker);
-                        marker.setIcon(getResources().getDrawable(R.mipmap.map_icon_2));
-                        marker.setTitle(task.getResult().getString(Constants.KEY_ADDRESS));
-                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LONGITUDE, lng+"");
-                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LATITUDE, lat+"");
-                        try{
-                        routing(lat, lng);
-                        }
-                        catch(Exception e){
-                            makeToast(e.getMessage());
-                        }
-                    }
-                });
-    }
 
     private void setListeners() {
         binding.cancel.setOnClickListener(v -> {
@@ -206,20 +141,64 @@ public class RouteActivity extends AppCompatActivity {
         });
     }
 
-    private void routing(double lat, double lng) {
-        new Thread() {
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG,"ROUTE STARTED");
-                        try {
+    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
+        if (error != null) {
+            makeToast(error.getMessage());
+        }
+        if (value != null) {
+            for(DocumentChange documentChange: value.getDocumentChanges()){
+                if (documentChange.getType() == DocumentChange.Type.REMOVED){
+                    preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
+                    preferencesManager.putString(Constants.KEY_VISITED_ID, "");
+                    preferencesManager.putString(Constants.KEY_VISITOR_ID, "");
+                    Intent intent = new Intent(getApplicationContext(), MapActivity.class);
+                    startActivity(intent);
+                }
+            }
+        }
+    };
+
+    private void settingMap() {
+        Context ctx = getApplicationContext();
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        map = binding.map;
+        map.setMinZoomLevel(15.0);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        mapController = map.getController();
+        mapController.setZoom(15);
+        map.setBuiltInZoomControls(false);
+        map.setMultiTouchControls(true);
+        mapController.setCenter(userLoc);
+        fusedLocationProviderClient2 = LocationServices.getFusedLocationProviderClient(ctx);
+        this.mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
+        this.mLocationOverlay.enableMyLocation();
+        this.mLocationOverlay.enableFollowLocation();
+        map.getOverlays().add(this.mLocationOverlay);
+        setRoute();
+    }
+
+    private void setRoute(){
+        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        double lng = task.getResult().getDouble("longitude");
+                        double lat = task.getResult().getDouble("latitude");
+                        coffeeshopLoc = new GeoPoint(lat, lng);
+                        Marker marker = new Marker(map);
+                        marker.setPosition(new GeoPoint(lat, lng));
+                        map.getOverlays().add(marker);
+                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                        map.getOverlays().add(marker);
+                        marker.setIcon(getResources().getDrawable(R.mipmap.map_icon_2));
+                        marker.setTitle(task.getResult().getString(Constants.KEY_ADDRESS));
+                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LONGITUDE, lng+"");
+                        preferencesManager.putString(Constants.KEY_COFFEESHOP_LATITUDE, lat+"");
+                        try{
                             RoadManager roadManager = new OSRMRoadManager(getApplicationContext(), "coffeeshopperhere");
                             if (roadManager == null) {
                                 Log.e(TAG, "null");
                             } else {
                                 Log.d(TAG, "ROUTE STARTED1");
-
                                 ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
                                 waypoints.add(userLoc);
                                 waypoints.add(new GeoPoint(lat, lng));
@@ -238,36 +217,12 @@ public class RouteActivity extends AppCompatActivity {
                             }
                         }
                         catch(Exception e){
-                            Log.d(TAG, e.getMessage());
+                            makeToast(e.getMessage());
                         }
                     }
                 });
-            }
-        }.start();
-    }
-    private void makeToast(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-     void showNotification(String title, String message) {
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("YOUR_CHANNEL_ID",
-                    "YOUR_CHANNEL_NAME",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("YOUR_NOTIFICATION_CHANNEL_DESCRIPTION");
-            mNotificationManager.createNotificationChannel(channel);
         }
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), "YOUR_CHANNEL_ID")
-                .setSmallIcon(R.drawable.logo)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setAutoCancel(true);
-    }
+
     public void locationUpdates(){
         try{
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -280,10 +235,9 @@ public class RouteActivity extends AppCompatActivity {
             locationRequest.setInterval(100);
             locationRequest.setFastestInterval(50);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            LocationCallback locationCallback = new LocationCallback() {
+            locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
-
                     if (locationResult != null) {
                         for (Location location : locationResult.getLocations()) {
                             HashMap<String, Object> updt = new HashMap<>();
@@ -294,22 +248,30 @@ public class RouteActivity extends AppCompatActivity {
                                     parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE))))
                             {
                                 if (preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
+                                    removeLocationUpdates();
+                                    database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
+                                            .update("activated", true);
                                     database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                             .collection(Constants.KEY_COLLECTION_USERS)
                                             .document(preferencesManager.getString(Constants.KEY_USER_ID)).update("status", "active");
                                     preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, true);
                                     preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                                    fusedLocationProviderClient.removeLocationUpdates(this);
                                     startActivity( new Intent(getApplicationContext(), ActivatedActivity.class));
                                     finish();
                                 }
                                 else {
-                                    showNotification("Поздравляем!", "Вы достигли точки, удачного кофепития)");
+                                    try{
+                                    removeLocationUpdates();
                                     preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
-                                    preferencesManager.putString(Constants.KEY_VISITED_ID,"");
-                                    preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
-                                    database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
-                                            .update("activated", false);
+
+                                    HashMap<String, Object> message = new HashMap<>();
+                                    message.put("type", "info");
+                                    message.put(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+                                    message.put(Constants.KEY_RECEIVER_ID, preferencesManager.getString(Constants.KEY_VISITED_ID));
+                                    message.put(Constants.KEY_MESSAGE, "Пользователь достиг точку");
+                                    message.put(Constants.KEY_TIMESTAMP, new Date());
+                                    database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+
                                     database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                             .collection(Constants.KEY_COLLECTION_USERS)
                                             .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
@@ -321,47 +283,55 @@ public class RouteActivity extends AppCompatActivity {
                                                     database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
                                                 }
                                             });
-                                    fusedLocationProviderClient.removeLocationUpdates(this);
                                     Intent i = new Intent(getApplicationContext(), MapActivity.class);
+                                    preferencesManager.putString(Constants.KEY_VISITED_ID,"");
                                     startActivity(i);
-
+                                    }
+                                    catch (Exception e){
+                                        Log.e(TAG, e.getMessage());
+                                    }
                                 }
                             }
-
                             preferencesManager.putString(Constants.KEY_USER_LATITUDE,location.getLatitude()+"");
                             preferencesManager.putString(Constants.KEY_USER_LONGITUDE,location.getLongitude()+"");
-
-                            if(preferencesManager.getBoolean(Constants.KEY_IS_VISITED)){
-                                database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
-                                        .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
-                                        .collection(Constants.KEY_COLLECTION_USERS)
-                                        .document(preferencesManager.getString(Constants.KEY_USER_ID))
+                            if(!preferencesManager.getString(Constants.KEY_VISITED_ID).equals("")){
+                                database.collection(Constants.KEY_COLLECTION_VISITS)
+                                        .document(preferencesManager.getString(Constants.KEY_VISITED_ID))
                                         .update(updt);
+                                }
                             }
                         }
-                    }
                     else{
-
+                        removeLocationUpdates();
                         preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                         database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                 .update("activated", false);
-
                         database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS).document(id)
                                 .collection(Constants.KEY_COLLECTION_USERS)
                                 .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
-
                         Intent i = new Intent(getApplicationContext(), MapActivity.class);
                         startActivity(i);
                     }
                 }
-
             };
-
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         }
         catch (Exception e){
             makeToast(e.getMessage());
         }
+    }
+
+    private void removeLocationUpdates(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    private void makeToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 }
 

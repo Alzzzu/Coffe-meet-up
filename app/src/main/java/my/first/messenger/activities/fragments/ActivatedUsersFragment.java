@@ -60,10 +60,9 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
         database = FirebaseFirestore.getInstance();
     }
     private void setListeners(){
-        binding.back.setOnClickListener(v->{
+        binding.imageBack.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                     .replace(R.id.fragment_container_view, options)
                     .addToBackStack(null)
                     .commit();
@@ -96,6 +95,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                         }
                         if (users.size()==0){
                             binding.noUsers.setVisibility(View.VISIBLE);
+                            binding.loading.setVisibility(View.VISIBLE);
                             binding.progress.setVisibility(View.GONE);
                             binding.loading.setText("Пользователи по запросу не найдены");
                             binding.swipeRefreshLayout.setRefreshing(false);
@@ -111,6 +111,7 @@ public class ActivatedUsersFragment extends Fragment implements UsersListener {
                     }
                     else {
                         binding.noUsers.setVisibility(View.VISIBLE);
+                        binding.loading.setVisibility(View.VISIBLE);
                         binding.progress.setVisibility(View.GONE);
                         binding.loading.setText("Пользователи по запросу не найдены");
                         binding.swipeRefreshLayout.setRefreshing(false);

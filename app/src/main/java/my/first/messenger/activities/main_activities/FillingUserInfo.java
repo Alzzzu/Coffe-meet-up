@@ -16,15 +16,12 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -51,21 +48,21 @@ public class FillingUserInfo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = FillingProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        url =null;
-
+        url = null;
         email_and_password = getIntent().getStringArrayExtra("email and password");
         preferencesManager = new PreferencesManager(getApplicationContext());
         user = new User();
         storageReference = FirebaseStorage.getInstance().getReference();
         getGender();
-        binding.button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isValidFilling()){
-                    getGender();
-                    fillInfo();
-
-                }
+        binding.button.setOnClickListener(v -> {
+            if(isValidFilling()){
+                binding.progress.setVisibility(View.VISIBLE);
+                binding.loading.setVisibility(View.VISIBLE);
+                binding.whiteBackground.setVisibility(View.VISIBLE);
+                binding.background.setVisibility(View.GONE);
+                binding.photo.setVisibility(View.GONE);
+                getGender();
+                fillInfo();
             }
         });
         binding.layoutPicture.setOnClickListener(v -> {
@@ -85,7 +82,8 @@ public class FillingUserInfo extends AppCompatActivity {
        data.put(Constants.KEY_ABOUT, binding.about.getText().toString());
        data.put(Constants.KEY_HOBBIES, binding.hobby.getText().toString());
        data.put(Constants.KEY_IMAGE, encodedImage);
-       database.collection("users").add(data)
+       data.put(Constants.KEY_IS_SIGNED_IN, true);
+       database.collection(Constants.KEY_COLLECTION_USERS).add(data)
                .addOnSuccessListener(documentReference -> {
                                     Toast.makeText(getApplicationContext(), "Data Inserted", Toast.LENGTH_SHORT).show();
                                     preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
@@ -95,6 +93,7 @@ public class FillingUserInfo extends AppCompatActivity {
                                     preferencesManager.putString(Constants.KEY_GENDER, gender);
                                     preferencesManager.putString(Constants.KEY_HOBBIES, binding.hobby.getText().toString());
                                     preferencesManager.putString(Constants.KEY_IMAGE, encodedImage);
+                                    preferencesManager.putString(Constants.KEY_AGE, binding.age.getText().toString());
                                     user.id = documentReference.getId();
                                     user.about = binding.about.getText().toString();
                                     user.hobby = binding.hobby.getText().toString();
@@ -105,8 +104,9 @@ public class FillingUserInfo extends AppCompatActivity {
                                 })
                .addOnFailureListener(exception -> {
                                     Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-    }
+                                    });
+               }
+
         private String encodeImage(Bitmap bitmap){
             int previewWidth = 150;
             int previewHeight = bitmap.getHeight() * previewWidth / bitmap.getWidth();
@@ -116,6 +116,7 @@ public class FillingUserInfo extends AppCompatActivity {
             byte[] bytes = byteArrayOutputStream.toByteArray();
             return Base64.encodeToString(bytes, Base64.DEFAULT);
         }
+
         private final ActivityResultLauncher<Intent> pickImage = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
@@ -178,6 +179,7 @@ public class FillingUserInfo extends AppCompatActivity {
                 }
             });
         }
+
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
@@ -200,12 +202,13 @@ public class FillingUserInfo extends AppCompatActivity {
                     }
                 }
             } else {
-                Toast.makeText(FillingUserInfo.this, "Please select an image", Toast.LENGTH_SHORT).show();
+                makeToast("Please select an image");
             }
         }
     });
+
     private void uploadImage(Uri file, String name, String id) {
-        StorageReference ref = storageReference.child("images/"+id+"/" + name);
+        StorageReference ref = storageReference.child("images/" + id + "/" + name);
         ref.putFile(file).addOnSuccessListener(taskSnapshot -> {
             makeToast("uploaded!");
             Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
@@ -213,16 +216,12 @@ public class FillingUserInfo extends AppCompatActivity {
             finish();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-        }).addOnFailureListener(e -> makeToast(e.getMessage())).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-            }
-        });
+        }).addOnFailureListener(e -> makeToast(e.getMessage()));
     }
 
     public void makeToast(String message){
             Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
-        }
+    }
 }
 
 

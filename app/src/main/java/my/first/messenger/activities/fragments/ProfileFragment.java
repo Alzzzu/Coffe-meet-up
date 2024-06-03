@@ -1,6 +1,7 @@
 package my.first.messenger.activities.fragments;
 
 import static android.app.Activity.RESULT_OK;
+
 import static java.lang.Long.parseLong;
 
 import android.content.Intent;
@@ -17,13 +18,10 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -35,7 +33,6 @@ import com.google.firebase.storage.UploadTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import my.first.messenger.R;
 import my.first.messenger.activities.adapters.ImageDisplayAdapter;
@@ -70,6 +67,7 @@ public class ProfileFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +76,7 @@ public class ProfileFragment extends Fragment {
             type = getArguments().getBoolean("visitor");
         }
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentProfileBinding.inflate(inflater, container, false);
@@ -112,7 +111,7 @@ public class ProfileFragment extends Fragment {
         binding.userAge.setText("Возраст: "+user.age);
         binding.userHobby.setText("Хобби: "+user.hobby);
         binding.userAbout.setText(user.about);
-        storageReference.child("images/"+user.id+"/0").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        storageReference.child("images/" + user.id + "/0").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 Glide.with(getActivity()).load(uri).into(binding.profilePicture);
@@ -120,66 +119,32 @@ public class ProfileFragment extends Fragment {
             }
         }).addOnFailureListener(exception -> makeToast(exception.getMessage()));
     }
-    public void makeToast(String message){
-        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
-    }
+
     private void setListeners() {
         binding.buttonToText.setOnClickListener(v ->{
-            if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
-                FirebaseFirestore database = FirebaseFirestore.getInstance();
-                database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                    .get()
-                    .addOnCompleteListener(task->{
-                        int count=0;
-                        for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
-                            count+=1;
-                        }
-                        if(count==0){
-                            HashMap<String, Object> updt = new HashMap<>();
-                            updt.put(Constants.KEY_VISITED_IMAGE, user.image);
-                            updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
-                            updt.put(Constants.KEY_VISITED_ID, user.id);
-                            updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
-                            updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
-                            updt.put(Constants.KEY_SEARCH_PURPOSE, preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE));
-                            updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
-                            updt.put(Constants.KEY_VISITED_NAME, user.name);
-                            updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
-                            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
-                            makeToast("запрос отправлен");
-                        }
-                    }
-                );
-                }
-            else{
-                preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
-                Intent intent = new Intent(getActivity(), ChatActivity.class);
-                intent.putExtra(Constants.KEY_USER, user);
-                startActivity(intent);
-            }
+            sendRequest();
         });
-        binding.imageBack.setOnClickListener(v-> {
+        binding.back.setOnClickListener(v-> {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(android.R.anim.slide_in_left,
-                    android.R.anim.slide_out_right).remove(this).commit();}
-            );
-        binding.showInfoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (clicked) {
-                    Animation animation = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
-                    binding.userInformation.setVisibility(View.VISIBLE);
-                    binding.userInformation.startAnimation(animation);
-                    binding.showInfoButton.setImageResource(R.drawable.wrap);
-                    clicked = false;
-                } else {
-                    binding.userInformation.setVisibility(View.GONE);
-                    binding.showInfoButton.setImageResource(R.drawable.unwrap);
-                    clicked = true;
+                            android.R.anim.slide_out_right).remove(this).commit();
                 }
+            );
+        binding.showInfoButton.setOnClickListener(v -> {
+            if (clicked) {
+                Animation animation = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
+                binding.userInformation.setVisibility(View.VISIBLE);
+                binding.userInformation.startAnimation(animation);
+                binding.showInfoButton.setImageResource(R.drawable.wrap);
+                clicked = false;
+            } else {
+                binding.userInformation.setVisibility(View.GONE);
+                binding.showInfoButton.setImageResource(R.drawable.unwrap);
+                clicked = true;
             }
         });
     }
+
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
@@ -197,6 +162,45 @@ public class ProfileFragment extends Fragment {
             }
         }
     });
+
+    private void sendRequest(){
+        if (!preferencesManager.getBoolean(Constants.KEY_IS_ACTIVATED)){
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+            database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task->{
+                                int count=0;
+                                for (QueryDocumentSnapshot queryDocumentSnapshot: task.getResult()){
+                                    count+=1;
+                                }
+                                if(count==0){
+                                    HashMap<String, Object> updt = new HashMap<>();
+                                    updt.put(Constants.KEY_VISITED_IMAGE, user.image);
+                                    updt.put(Constants.KEY_VISITOR_IMAGE, preferencesManager.getString(Constants.KEY_IMAGE));
+                                    updt.put(Constants.KEY_VISITED_ID, user.id);
+                                    updt.put(Constants.KEY_AGE, parseLong(preferencesManager.getString(Constants.KEY_AGE)));
+                                    updt.put(Constants.KEY_GENDER, preferencesManager.getString(Constants.KEY_GENDER));
+                                    updt.put(Constants.KEY_SEARCH_PURPOSE, preferencesManager.getString(Constants.KEY_SEARCH_PURPOSE));
+                                    updt.put(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID));
+                                    updt.put(Constants.KEY_VISITED_NAME, user.name);
+                                    updt.put(Constants.KEY_VISITOR_NAME, preferencesManager.getString(Constants.KEY_NAME));
+                                    database.collection(Constants.KEY_COLLECTION_MEET_UP_OFFERS).add(updt);
+                                    makeToast("запрос отправлен");
+                                }
+                                else{
+                                    makeToast("запрос уже был отправлен");
+                                }
+                            }
+                    );
+        }
+        else{
+            preferencesManager.putString(Constants.KEY_VISITOR_ID, user.id);
+            Intent intent = new Intent(getActivity(), ChatActivity.class);
+            intent.putExtra(Constants.KEY_USER, user);
+            startActivity(intent);
+        }
+    }
+
     private void uploadImage(Uri file, String name) {
         StorageReference ref = storageReference.child("images/"+ user.id+"/" + name);
         ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -207,30 +211,29 @@ public class ProfileFragment extends Fragment {
             }
         }).addOnFailureListener(e -> makeToast(e.getMessage()));
     }
+
     private void loadUserGallery(){
         FirebaseStorage.getInstance().getReference().child("images/"+user.id+"/").listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
-
             @Override
             public void onSuccess(ListResult listResult) {
                 binding.userGallery.setAdapter(imageAdapter);
-                listResult.getItems().forEach(new Consumer<StorageReference>() {
-                    @Override
-                    public void accept(StorageReference storageReference) {
-                        Image image = new Image();
-                        image.name = storageReference.getName();
-                        storageReference.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                String url = "https://" + task.getResult().getEncodedAuthority() + task.getResult().getEncodedPath() + "?alt=media&token=" + task.getResult().getQueryParameters("token").get(0);
-                                image.uri = url;
-                                galleryImages.add(image);
-                                imageAdapter.notifyDataSetChanged();
-                            }
-                        });
+                listResult.getItems().forEach(storageReference -> {
+                    Image image = new Image();
+                    image.name = storageReference.getName();
+                    storageReference.getDownloadUrl().addOnCompleteListener(task -> {
+                        String url = "https://" + task.getResult().getEncodedAuthority() + task.getResult().getEncodedPath() + "?alt=media&token=" + task.getResult().getQueryParameters("token").get(0);
+                        image.uri = url;
+                        galleryImages.add(image);
+                        imageAdapter.notifyDataSetChanged();
+                    });
 
-                    }
                 });
             }
         }).addOnFailureListener(e -> makeToast("Неудалось извлечь файл"));
     }
+
+    public void makeToast(String message){
+        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
+    }
+
 }

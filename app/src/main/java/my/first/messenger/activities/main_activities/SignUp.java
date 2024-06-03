@@ -41,7 +41,7 @@ public class SignUp extends AppCompatActivity {
 
                             Intent i = new Intent(SignUp.this, FillingUserInfo.class);
                             i.putExtra("email and password", new String[]{user_email,user_password});
-                            startActivity(i);
+                             startActivity(i);
 
                         }
                     });
@@ -56,6 +56,10 @@ public class SignUp extends AppCompatActivity {
             makeToast("пустой адрес почты или пароль");
             return false;
         }
+        if (password.length()<6){
+            makeToast("введенные пароли не совпадают");
+            return false;
+        }
         if(!password.equals(confirmPasword)) {
             makeToast("введенные пароли не совпадают");
             return false;
@@ -65,6 +69,7 @@ public class SignUp extends AppCompatActivity {
     public void makeToast(String message){
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
     }
+
 
 }
 

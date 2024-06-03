@@ -68,7 +68,6 @@ public class UsersFragment extends Fragment implements UsersListener {
           binding.imageBack.setOnClickListener(v->{
             OptionsFragment options = new OptionsFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                 .replace(R.id.fragment_container_view, options)
                 .addToBackStack(null)
                 .commit();
@@ -123,6 +122,7 @@ public class UsersFragment extends Fragment implements UsersListener {
                                             }
                                             else{
                                                 binding.noUsers.setVisibility(View.VISIBLE);
+                                                binding.loading.setVisibility(View.VISIBLE);
                                                 binding.progress.setVisibility(View.GONE);
                                                 binding.swipeRefreshLayout.setRefreshing(false);
                                                 binding.loading.setText("Пользователи по запросу не найдены");
@@ -133,6 +133,7 @@ public class UsersFragment extends Fragment implements UsersListener {
                              }
                         if (coffeeShopCounter==0){
                             binding.noUsers.setVisibility(View.VISIBLE);
+                            binding.loading.setVisibility(View.VISIBLE);
                             binding.progress.setVisibility(View.GONE);
                             binding.swipeRefreshLayout.setRefreshing(false);
                             binding.loading.setText("Пользователи по запросу не найдены");
@@ -141,6 +142,7 @@ public class UsersFragment extends Fragment implements UsersListener {
                     else{
                         Log.d(TAG, "no result");
                         binding.noUsers.setVisibility(View.VISIBLE);
+                        binding.loading.setVisibility(View.VISIBLE);
                         binding.progress.setVisibility(View.GONE);
                         binding.swipeRefreshLayout.setRefreshing(false);
                         binding.loading.setText("Пользователи по запросу не найдены");

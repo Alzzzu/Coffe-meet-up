@@ -64,7 +64,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:riv_border_color="#333333"
-                app:riv_border_width="2dip"
+                app:riv_border_width="1dip"
                 app:riv_corner_radius="30dip"
                 app:riv_mutate_background="true"
                 app:riv_oval="true" />
@@ -104,7 +104,7 @@
                 android:id="@+id/user_information"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="@dimen/_10sdp"
+                android:layout_marginRight="13dp"
                 android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/show_info_button"
@@ -115,7 +115,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
-                    android:textSize="@dimen/_17ssp"
+                    android:textSize="22.10sp"
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:layout_marginBottom="@dimen/_5sdp"/>
                 <TextView
@@ -125,7 +125,7 @@
                     android:text="Мария любит пить чай"
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
-                    android:textSize="@dimen/_17ssp"
+                    android:textSize="22.10sp"
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:layout_marginRight="@dimen/_10sdp"
                     android:layout_marginBottom="@dimen/_5sdp" />
@@ -136,10 +136,9 @@
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:layout_marginRight="@dimen/_10sdp"
                     android:layout_marginBottom="@dimen/_10sdp"
-                    android:text="Мария любит пить чай"
                     android:textColor="@color/grey"
                     android:fontFamily="@font/russ3"
-                    android:textSize="@dimen/_17ssp" />
+                    android:textSize="22.10sp" />
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/user_gallery"
@@ -156,8 +155,9 @@
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:src="@drawable/ic_add"
+                android:layout_marginEnd="6dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/user_information" />
+                app:layout_constraintTop_toBottomOf="@id/user_information"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
     <com.google.android.material.bottomnavigation.BottomNavigationView

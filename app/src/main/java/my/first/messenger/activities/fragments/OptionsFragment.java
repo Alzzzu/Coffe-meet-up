@@ -88,7 +88,6 @@ public class OptionsFragment extends Fragment {
                 else{
                 UsersFragment users = new UsersFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                         .replace(R.id.fragment_container_view, users)
                         .addToBackStack(null)
                         .commit();

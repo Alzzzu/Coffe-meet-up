@@ -7,8 +7,9 @@ public class Functions {
 
     // Firebase Actions
     public static void deleteActivation(FirebaseFirestore database, PreferencesManager preferencesManager)  {
+        preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
 
-       database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
+        database.collection(Constants.KEY_COLLECTION_COFFEE_SHOPS)
                 .document(preferencesManager.getString(Constants.KEY_COFFEESHOP_ID))
                 .collection(Constants.KEY_COLLECTION_USERS)
                 .document(preferencesManager.getString(Constants.KEY_USER_ID)).delete();
@@ -55,29 +56,19 @@ public class Functions {
                         }
                     }
                 });
-        preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
     }
     public static void deleteVisits(FirebaseFirestore database, PreferencesManager preferencesManager){
         preferencesManager.putBoolean(Constants.KEY_IS_VISITED, false);
-        preferencesManager.putString(Constants.KEY_VISITOR_ID,"");
-        database.collection(Constants.KEY_COLLECTION_VISITS)
-                .whereEqualTo(Constants.KEY_VISITED_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .get()
-                .addOnCompleteListener(task->{
-
-                    for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                        database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
-                    }
-                });
-        database.collection(Constants.KEY_COLLECTION_VISITS)
-                .whereEqualTo(Constants.KEY_VISITOR_ID, preferencesManager.getString(Constants.KEY_USER_ID))
-                .get()
-                .addOnCompleteListener(task->{
-
-                    for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult()){
-                        database.collection(Constants.KEY_COLLECTION_VISITS).document(queryDocumentSnapshot.getId()).delete();
-                    }
-                });
+        if (preferencesManager.getString(Constants.KEY_VISITED_ID).isEmpty()){
+            database.collection(Constants.KEY_COLLECTION_VISITS)
+                    .document(preferencesManager.getString(Constants.KEY_USER_ID))
+                    .delete();
+        }
+        else {
+            database.collection(Constants.KEY_COLLECTION_VISITS)
+                    .document(preferencesManager.getString(Constants.KEY_VISITED_ID))
+                    .delete();
+        }
     }
 
     //Location

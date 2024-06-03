@@ -73,7 +73,6 @@ public class CoffeeshopFragment extends Fragment {
             user.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
             user.put(Constants.KEY_IMAGE,preferencesManager.getString(Constants.KEY_IMAGE));
             user.put(Constants.KEY_GENDER,preferencesManager.getString(Constants.KEY_GENDER));
-            user.put(Constants.KEY_USER_ID,preferencesManager.getString(Constants.KEY_USER_ID));
             user.put(Constants.KEY_AGE,parseLong(preferencesManager.getString(Constants.KEY_AGE)));
 
             database.collection("coffeeshops").document(id)

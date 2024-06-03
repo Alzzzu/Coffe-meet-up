@@ -39,15 +39,19 @@
         android:fontFamily="@font/russ3"
         android:textSize="@dimen/_20ssp"
         android:layout_below="@id/name"
-        android:layout_centerHorizontal="true"/>
-    <Button
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/_10sdp"/>
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/route"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Проложить маршрут"
+        android:text="проложить маршрут"
+        android:textColor="@color/white"
+        android:fontFamily="@font/russ3"
+        android:textSize="@dimen/_14sdp"
         android:layout_gravity="center"
         android:backgroundTint="@color/whipped_cream"
-        android:layout_marginBottom="@dimen/_15sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
         android:layout_below="@id/address"
         android:layout_centerHorizontal="true"/>
     </RelativeLayout>

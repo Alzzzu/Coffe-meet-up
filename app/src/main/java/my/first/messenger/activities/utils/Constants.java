@@ -43,6 +43,7 @@ public class Constants {
 
 
     // Message
+    public static final String KEY_IS_PRESSED = "is_pressed";
     public static final String KEY_SENDER_ID = "senderId";
     public static final String KEY_RECEIVER_ID = "receiverId";
     public static final String KEY_MESSAGE = "message";

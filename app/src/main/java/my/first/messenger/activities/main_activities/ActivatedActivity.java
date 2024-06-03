@@ -42,6 +42,7 @@ public class ActivatedActivity extends FragmentActivity  {
     private PreferencesManager preferencesManager;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
     private FirebaseFirestore database;
     private final String TAG = "ActivatedActivityTAG";
     private String id;
@@ -87,7 +88,9 @@ public class ActivatedActivity extends FragmentActivity  {
         });
         binding.cancel.setOnClickListener(v->{
             try{
+                preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
                 deleteActivation(database, preferencesManager);
+                removeLocationUpdates();
             }
             catch(Exception e){
                 Log.e(TAG, e.getMessage());
@@ -101,7 +104,7 @@ public class ActivatedActivity extends FragmentActivity  {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
                 if (item.getItemId()==R.id.profile){
-                    Intent intent = new Intent( getApplicationContext(), ProfileActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                     User user = new User();
                     user.id =  preferencesManager.getString(Constants.KEY_USER_ID);
                     user.about = preferencesManager.getString(Constants.KEY_ABOUT);
@@ -128,7 +131,6 @@ public class ActivatedActivity extends FragmentActivity  {
                 }
             }
         });
-
     }
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
@@ -140,7 +142,13 @@ public class ActivatedActivity extends FragmentActivity  {
                     preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
                     preferencesManager.putBoolean(Constants.KEY_IS_VISITED, true);
                     preferencesManager.putString(Constants.KEY_VISITOR_ID, documentChange.getDocument().getString(Constants.KEY_VISITOR_ID));
+                    removeLocationUpdates();
+                    try{
                     deleteActivation(database, preferencesManager);
+                    }
+                    catch (Exception e){
+                        Log.e(TAG, e.getMessage());
+                    }
                     startActivity(new Intent(getApplicationContext(), VisitedActivity.class));
                     finish();
                 }
@@ -148,6 +156,7 @@ public class ActivatedActivity extends FragmentActivity  {
             }
         }
     };
+
     public void locationUpdates() {
         try {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -160,24 +169,25 @@ public class ActivatedActivity extends FragmentActivity  {
             locationRequest.setInterval(100);
             locationRequest.setFastestInterval(50);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            LocationCallback locationCallback = new LocationCallback() {
+            locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     if (locationResult != null) {
                         for (Location location : locationResult.getLocations()) {
-                            try{
+
                             if (0.1 < distance(location.getLatitude(), location.getLongitude(), parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LATITUDE)), parseDouble(preferencesManager.getString(Constants.KEY_COFFEESHOP_LONGITUDE)))) {
                                 fusedLocationProviderClient.removeLocationUpdates(this);
-                                deleteActivation(database, preferencesManager);
+                                removeLocationUpdates();
+                                try{
+                                deleteActivation(database, preferencesManager);}
+                                catch (Exception e){
+                                    Log.e(TAG, e.getMessage());
+                                }
                                 startActivity(new Intent(getApplicationContext(), MapActivity.class));
                                 finish();
                             }
                             else{
                                 Log.d(TAG, location.toString());
-                            }
-                            }
-                            catch (Exception e){
-                                Log.wtf(TAG,e.getMessage());
                             }
                         }
                     }
@@ -188,5 +198,8 @@ public class ActivatedActivity extends FragmentActivity  {
         catch (Exception e){
             Log.e(TAG, e.getMessage());
         }
+    }
+    private void removeLocationUpdates(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 }
