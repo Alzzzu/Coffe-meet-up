@@ -1,6 +1,9 @@
 package my.first.messenger.activities.main_activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -36,7 +39,9 @@ public class LogIn extends AppCompatActivity {
     }
     private void setListeners(){
         binding.login.setOnClickListener(v-> {
-            checkUser(binding.email.getText().toString(), binding.password.getText().toString());
+            if (checkConnection()) {
+                checkUser(binding.email.getText().toString(), binding.password.getText().toString());
+            }
         });
         binding.register.setOnClickListener(v-> {
             Intent i = new Intent(LogIn.this, SignUp.class);
@@ -108,6 +113,20 @@ public class LogIn extends AppCompatActivity {
                     }
                 });
         }
+
+    private Boolean checkConnection(){
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+        if (activeNetworkInfo != null && activeNetworkInfo.isConnected()){
+            return true;
+        }
+        else{
+            binding.incorrect.setText("Нет подключения к сети");
+            binding.incorrect.setVisibility(View.VISIBLE);
+            return false;
+        }
+    }
     public void makeToast(String message){
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_SHORT).show();
     }

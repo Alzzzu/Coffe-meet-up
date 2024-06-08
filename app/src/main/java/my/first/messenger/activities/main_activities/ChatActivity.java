@@ -65,7 +65,8 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
         setListeners();
         loadReceiverDetail();
         try{
-        listenMessages();}
+        listenMessages();
+        }
         catch (Exception e){
             Log.e(TAG, e.getMessage());
         }
@@ -143,7 +144,7 @@ public class ChatActivity extends BaseActivity implements ChatMessageListener {
     }
 
     private void sendMessage(){
-        if(!binding.inputMessage.getText().toString().isEmpty()) {
+        if(!binding.inputMessage.getText().toString().isEmpty()&&!binding.inputMessage.getText().toString().matches("\\s*")) {
             HashMap<String, Object> message = new HashMap<>();
             message.put("type", "message");
             message.put(Constants.KEY_SENDER_ID, preferencesManager.getString(Constants.KEY_USER_ID));

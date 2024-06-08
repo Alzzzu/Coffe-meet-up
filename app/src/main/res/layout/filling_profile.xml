@@ -62,9 +62,7 @@
                     android:text="+"
                     android:textColor="@color/coffee"
                     android:gravity="center"
-                    android:textSize="@dimen/_30sdp"
-                    />
-
+                    android:textSize="@dimen/_30sdp" />
             </FrameLayout>
 
             <EditText
@@ -75,7 +73,7 @@
                 android:textColorHint="@color/light_grey"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_15ssp"
-                />
+                android:maxLength="30"/>
 
             <RadioGroup
                 android:id="@+id/gender"
@@ -89,8 +87,6 @@
                     android:text="@string/male"
                     android:textSize="@dimen/_15ssp"
                     android:textColor="@color/light_grey"/>
-
-
                 <RadioButton
                     android:id="@+id/F"
                     android:layout_width="match_parent"
@@ -109,6 +105,7 @@
                 android:inputType="number"
                 android:textColor="@color/white"
                 android:textColorHint="@color/light_grey"
+                android:maxLength="3"
                 android:textSize="@dimen/_15ssp" />
 
             <EditText
@@ -117,6 +114,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/user_hobbies"
                 android:textColorHint="@color/light_grey"
+                android:maxLength="100"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_15ssp" />
 
@@ -126,6 +124,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/user_about"
                 android:textColorHint="@color/light_grey"
+                android:maxLength="100"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_15ssp"/>
 
@@ -137,6 +136,7 @@
                 android:text="@string/cont"
                 android:fontFamily="@font/russ"
                 android:textSize="@dimen/_25ssp"
+                android:textColor="@color/white"
                 android:tint="#66FF0000"
                 android:alpha="0.8"
                 android:background="?android:attr/selectableItemBackground"/>

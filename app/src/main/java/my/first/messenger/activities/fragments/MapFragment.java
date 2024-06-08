@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -37,7 +38,7 @@ import my.first.messenger.databinding.FragmentMapBinding;
 
 public class MapFragment extends Fragment {
     protected IMapController mapController;
-    MapView map =null;
+    MapView map = null;
     private ArrayList<Coffeeshop> coffeshops;
     private FusedLocationProviderClient mFusedLocationClient;
     private FragmentMapBinding binding;
@@ -68,12 +69,17 @@ public class MapFragment extends Fragment {
 
         binding = FragmentMapBinding.inflate(inflater, container, false);
         init();
-        getCoffeeshops();
-        settingMap();
-
+        try {
+            getCoffeeshops();
+            settingMap();
             for (Coffeeshop cf: coffeshops){
                 setMarker(cf);
             }
+        }
+        catch (Exception e){
+            makeToast(e.getMessage());
+        }
+
         return binding.getRoot();
     }
     private void init(){
@@ -96,7 +102,6 @@ public class MapFragment extends Fragment {
         this.mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),map);
         this.mLocationOverlay.enableMyLocation();
         map.getOverlays().add(this.mLocationOverlay);
-
     }
     private void getCoffeeshops(){
         FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -113,7 +118,7 @@ public class MapFragment extends Fragment {
                                 coffeeshop.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
                                 coffeeshop.address = queryDocumentSnapshot.getString(Constants.KEY_ADDRESS);
                                 coffeeshop.id = queryDocumentSnapshot.getId();
-                                coffeeshop.geoPoint = new GeoPoint(lat, lng);//getLocationFromAddress(queryDocumentSnapshot.getString(Constants.KEY_ADDRESS)));
+                                coffeeshop.geoPoint = new GeoPoint(lat, lng);
                                 coffeshops.add(coffeeshop);
                                 setMarker(coffeeshop);
                             }
@@ -121,7 +126,6 @@ public class MapFragment extends Fragment {
 
                     }
                 });
-
     }
     private void setMarker(Coffeeshop coffeeshop){
         Marker startMarker = new Marker(map);
@@ -156,4 +160,7 @@ public class MapFragment extends Fragment {
         }
     });
 }
+    public void makeToast(String message){
+        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
+    }
 }

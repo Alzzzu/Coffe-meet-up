@@ -35,6 +35,7 @@ import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
@@ -219,15 +220,17 @@ import my.first.messenger.databinding.ActivityProfileBinding;
             updates.put(Constants.KEY_IS_SIGNED_IN, false);
             documentReference.update(updates)
                     .addOnSuccessListener(unused -> {
+                        preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_GOING, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_ACTIVATED, false);
                         preferencesManager.putBoolean(Constants.KEY_IS_VISITED, false);
-                        preferencesManager.putBoolean(Constants.KEY_IS_SIGNED_IN, false);
                         preferencesManager.putString(Constants.KEY_SEARCH_PURPOSE, "");
                         preferencesManager.putString(Constants.KEY_SEARCH_GENDER, "");
                         preferencesManager.putLong(Constants.KEY_SEARCH_MIN_AGE, 0);
                         preferencesManager.putLong(Constants.KEY_SEARCH_MAX_AGE, 0);
-                        startActivity(new Intent(getApplicationContext(), LogIn.class));
+                        Intent intent = new Intent(getApplicationContext(), LogIn.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                         finish();
                     })
                     .addOnFailureListener(e -> makeToast("Ошибка выхода"));
@@ -274,6 +277,7 @@ import my.first.messenger.databinding.ActivityProfileBinding;
                         galleryImages.add(image);
                         imageAdapter.notifyDataSetChanged();
                     });
+                    Collections.sort(galleryImages, (obj1,obj2)->obj1.name.compareTo(obj2.name));
                 });
             }
         }).addOnFailureListener(e -> makeToast("Неудалось извлечь файл"));

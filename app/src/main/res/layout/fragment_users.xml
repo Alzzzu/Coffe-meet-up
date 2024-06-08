@@ -68,7 +68,8 @@
         android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:layout_below="@id/title"
-        android:layout_marginTop="@dimen/_25sdp" />
+        android:layout_marginTop="@dimen/_25sdp"
+        android:layout_marginBottom="@dimen/_35sdp"/>
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imageBack"
         android:layout_width="@dimen/_25sdp"

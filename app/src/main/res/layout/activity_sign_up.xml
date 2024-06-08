@@ -92,6 +92,7 @@
         android:fontFamily="@font/russ"
         android:layout_marginTop="@dimen/_5sdp"
         android:text="@string/cont"
+        android:textColor="@color/white"
         android:background="?android:attr/selectableItemBackground"
         android:textSize="@dimen/_20ssp"
         android:alpha="0.8"/>

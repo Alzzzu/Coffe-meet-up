@@ -66,6 +66,7 @@
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLength="30"
                 android:layout_marginLeft="@dimen/_25sdp"
                 android:layout_marginRight="@dimen/_25sdp"/>
             <EditText
@@ -73,14 +74,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/_25sdp"
-                android:layout_marginRight="@dimen/_25sdp"/>
+                android:layout_marginRight="@dimen/_25sdp"
+                android:maxLength="100"
+                />
             <EditText
                 android:id="@+id/hobby"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/_25sdp"
                 android:layout_marginRight="@dimen/_25sdp"
-                android:layout_marginBottom="@dimen/_25sdp"/>
+                android:layout_marginBottom="@dimen/_25sdp"
+                android:maxLength="100" />
             <ImageView
                 android:id="@+id/gallery_image"
                 android:layout_width="@dimen/_280sdp"

@@ -22,9 +22,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -89,12 +87,7 @@ public class EditProfileActivity extends AppCompatActivity {
             if (isValidFilling()){
                 binding.done.setOnClickListener(null);
                 updateUserInfo();
-                //if(updateUserInfo()){
-      //          Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
-       //         intent.putExtra(Constants.KEY_USER, user);
-       //         startActivity(intent);
-         //       finish();
-                    //}
+
             }
         });
     }
@@ -147,10 +140,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
     }
     private Boolean isValidFilling(){
-        // if(encodedImage.equals(null)){
-         //   makeToast("Выберите фото");
-          ///  return false;
-        //}
 
         if (!binding.name.getText().toString().matches("\\w+")) {
             makeToast("Пожалуйста, используйте только буквы для записи имени");
@@ -162,29 +151,7 @@ public class EditProfileActivity extends AppCompatActivity {
         }
         return true;
     }
-    private final ActivityResultLauncher<Intent> pickImage = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    if (result.getData() != null) {
-                        Uri imageUri = result.getData().getData();
-                        try {
-                            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                             options.inScaled = false;
-                             options.inDither = false;
-                             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-                            binding.profilePicture.setImageBitmap(bitmap);
-                            String encodedImage = encodeImage(bitmap);
-                            byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
-                            Bitmap new_bitmap = BitmapFactory.decodeByteArray(bytes, 0 ,bytes.length);
-                            //here
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
+
     private String encodeImage(Bitmap bitmap){
         int previewWidth = 150;
         int previewHeight = bitmap.getHeight() * previewWidth / bitmap.getWidth();
@@ -212,8 +179,6 @@ public class EditProfileActivity extends AppCompatActivity {
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
                         binding.profilePicture.setImageBitmap(bitmap);
                         encodedImage = encodeImage(bitmap);
-                       // byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
-                        //Bitmap new_bitmap = BitmapFactory.decodeByteArray(bytes, 0 ,bytes.length);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -224,30 +189,18 @@ public class EditProfileActivity extends AppCompatActivity {
     });
     private void uploadImageProfile(Uri file) {
         StorageReference ref = storageReference.child("images/"+ user.id+"/" + "0");
-        ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                //     makeToast("uploaded!");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast(e.getMessage());
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                   binding.progress.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
-                    binding.progress.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
-            }
+        ref.putFile(file).addOnSuccessListener(taskSnapshot -> {
+                 makeToast("uploaded!");
+        }).addOnFailureListener(e -> makeToast(e.getMessage())
+        ).addOnProgressListener(taskSnapshot -> {
+               binding.progress.setMax(Math.toIntExact(taskSnapshot.getTotalByteCount()));
+               binding.progress.setProgress(Math.toIntExact(taskSnapshot.getBytesTransferred()));
         }).addOnCompleteListener(task -> {
             Intent intent = new Intent(getApplicationContext(), ProfileActivity.class );
             intent.putExtra(Constants.KEY_USER, user);
             startActivity(intent);
             finish();
-
         });
-
     }
 
 

@@ -117,28 +117,6 @@ public class FillingUserInfo extends AppCompatActivity {
             return Base64.encodeToString(bytes, Base64.DEFAULT);
         }
 
-        private final ActivityResultLauncher<Intent> pickImage = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK) {
-                        if (result.getData() != null) {
-                            Uri imageUri = result.getData().getData();
-                            try {
-                                InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                                BitmapFactory.Options options = new BitmapFactory.Options();
-                                options.inScaled = false;
-                                options.inDither = false;
-                                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                                Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-                                binding.profilePicture.setImageBitmap(bitmap);
-                                binding.addImageText.setVisibility(View.GONE);
-                                encodedImage = encodeImage(bitmap);
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-
         private Boolean isValidFilling () {
             if (url==null) {
                 makeToast("Пожалуйста, выберите фото");

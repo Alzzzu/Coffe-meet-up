@@ -2,7 +2,6 @@ package my.first.messenger.activities.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import my.first.messenger.R;
 import my.first.messenger.activities.listeners.UsersListener;
 import my.first.messenger.activities.models.User;
 import my.first.messenger.databinding.ItemContainerUserBinding;
@@ -63,7 +61,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 @Override
                 public void onClick(View v) {
                     usersListener.onUserClick(user);
-                //    binding.getRoot().setBackgroundColor(Color.GRAY);
                 }
             });
         }
